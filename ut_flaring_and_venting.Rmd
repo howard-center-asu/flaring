@@ -1,0 +1,65 @@
+---
+title: "Utah flaring and venting totals"
+author: "Zoha Tunio and Sarah Hunt"
+date: "11/23/2021"
+output:
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+
+library(tidyverse)
+library(janitor)
+library(lubridate)
+library(gt)
+#this is an attempt to get rid of the scientific notation problem when reading in Excel files. I have no idea if it will work .
+options (scipen = 999)
+
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Introduction
+
+This notebook contains the analysis of Utah’s flaring and venting data for the Howard Center Investigation, “….”. As part of the investigation, we collected flaring and venting volumes reported by oil and gas companies to state regulators. We then compared annual totals for each state to what was recorded by a U.S. satellite equipped with a Visible Infrared Imaging Radiometer Suite (VIIRS) instrument. (To learn more about the satellite and our analysis of the data it collected, see this notebook).
+
+The Utah Division of Oil, Gas and Mining requires oil and gas operators on producing, shut-in and temporarily abandoned wells to fill a form titled `Form 11` (https://oilgas.ogm.utah.gov/pub/report_forms/frm_11_2005.pdf). 
+
+Data from the monthly reports (2012-present) are available at the division's website under its Data Research Center tab [here] (https://oilgas.ogm.utah.gov/oilgasweb/data-center/dc-main.xhtml). Click `Disposition Data (2009-2014; can open in Excel),` `Disposition Data (2015-2019; can open in Excel),` and `Disposition Data (2020-2024; can open in Excel)` to download the data sets for our selected time frame. This will download the data in .csv format. 
+
+
+#Load Data
+
+We uploaded each of the downloaded data sets individually and created a new data frame, joining the data sets so all the information from 2012-2020 was combined into one data set. We then cleaned and checked that for duplicates. There were no duplicates.
+
+We created a fresh csv file for the analysis: `ut_flaring_and_venting.csv`
+
+
+```{r load_and_clean_data, echo=TRUE}
+
+ut <- read.csv("ut_flaring_and_venting.csv")
+
+```
+
+
+#Analysis
+
+The story states: "Combined flared/vented gas volumes, as reported to the state: 11,390,778,000 cubic feet"
+
+The story states: "According to state data, oil and gas companies in Utah flared and vented more than 11 billion cubic feet of natural gas between 2012 and 2020."
+
+So, we're going to go ahead and summarize for the years 2012 to 2020. Remember that these results will be in MCF.
+
+
+```{r}
+
+ut %>%
+  filter(year >= 2012 & year <= 2020) %>%
+  group_by(year) %>%
+  summarise(total = sum(Vol.VentedFlared, na.rm = TRUE)) %>%
+  gt(rowname_col = "year") %>%
+  grand_summary_rows(fns = list("total" = "sum")) %>%
+  print()
+
+
+```
+

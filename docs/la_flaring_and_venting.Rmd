@@ -1,0 +1,81 @@
+---
+title: "Louisiana Flaring and Venting"
+author: "Kenny Quayle, Rachel Stapholz"
+date: "11/8/2021"
+output:
+    html_document:
+      code_folding: show
+      df_print: paged
+      toc: true
+      toc_float: true
+      code_download: true
+---
+
+```{r}
+
+library(tidyverse)
+library(knitr)
+library(janitor)
+library(scales)
+library(lubridate)
+library(dplyr)
+library(readr)
+library(stringr)
+library(gt)
+
+
+```
+
+# Introduction
+This notebook contains the analysis of Louisiana's flaring and venting data for the Howard Center Investigation. As part of the investigation, we collected flaring and venting volumes reported to state regulators by oil and gas companies. We then compared the annual flaring and venting totals of each state to another database consisting of flaring event observations made by a satellite equipped with a Visible Infrared Imaging Radiometer Suite (VIIRS) instrument.
+
+In Louisiana, oil and gas operators are required to submit a form, called form R5D, on a monthly basis to the Louisiana Department of Natural Resources. The form includes production numbers, sales numbers, well site gas use volumes, and flaring and venting volumes among other disposition data. Specifically, there are two field in the form labeled "Vented After Use for Gas Lift," and "Vented (System Flare)" that contain the data we are working with. Reported gas flaring and venting is measured in thousand of cubic feet (Mcf).
+
+Louisiana's data from the monthly reports is available at the DNR’s SONRIS data portal [here] (https://sonlite.dnr.state.la.us/pls/apex/f?p=108:2:23507633725345:::::), which allows one year’s worth of data to be downloaded at a time. Click “Production Audit,” and then click the spreadsheet icon for “R5D Data Entry (Gas Disposition).” For the date fields, enter a starting date of “01-Jan” and ending date of “01-Dec” for a given year. For the “Group Code” field, click to highlight all codes for the complete data set, and then click to execute the search. To download the data, click the “Actions” dropdown menu near the top left of the displayed results table, click “Download,” and select the .csv format option. The column named “Group Code” can be filtered for “63” for volumes of vented gas and “64” for volumes of flared gas. 
+
+Note: Both executing a search and downloading a file may take several minutes.
+
+Note: Executing searches for the date fields “01-Jan” through “01-Dec” will produce data for the entire given year, because reports are dated with the first of the month. The data portal does not allow searches through “31-Dec,” because the system registers the search as exceeding its one-year limit.
+
+Note: DNR has confirmed that the “Report Date” column refers to the month the data was captured. An entry dated “01-Jan-20” contains data on oil and gas production that occurred in January of 2020. 
+
+Note: There are no official definitions for entries in the “Comments” column, but DNR staff says “letter/error report file created” means the company uploaded a report.
+
+Note: The reported volumes contain negative values, described by the Louisiana Department of Natural Resources as indicating that the gas flared or vented was obtained from federal land but flared or vented on state land. Therefore, converting these numbers to positive integers is the only way to obtain the full total. According to the Louisiana Department of Natural Resources, this only includes "upstream" data. However, because this is gas obtained on federal lands and then flared on state lands, it seems like it would be what can often be considered "midstream." Given that the satellite data includes "midstream" flaring in its "upstream" data set, this shouldn't be a problem.
+
+We pulled the disposition data from the SONRIS portal and saved it to the project directory, current as of August 4, 2021. This data may be amended by companies and is not subject to auditing by the Louisiana Department of Natural Resources, so disposition data downloaded after this date may produce differing results.
+
+The data was cleaned and duplicates -- as defined by the criteria confirmed by the state -- were removed.
+
+
+```{r load_and_clean_data, echo=TRUE}
+
+
+la_flaring_and_venting <- read.csv("la_final.csv")
+
+
+```
+
+
+# Total flared/vented volumes
+
+The story states: "Combined flared/vented gas volumes, as reported by the state: 45,068,737,000 cubic feet"
+
+
+These numbers were calculated by aggregating the totals reported. We extracted the year from the date and created a new `year` column, then filtered for the years 2012 to 2020, the time frame we're looking at for this investigation. Next, we grouped by year to calculate annual totals. These results will be in MCF.
+
+
+
+```{r}
+
+la_flaring_and_venting %>%
+  mutate (year = as.numeric(str_sub(report_date, -4, -1))) %>%
+  filter(year >= 2012 & year <= 2020) %>%
+  group_by(year) %>%
+  summarise(total = sum(abs, na.rm = TRUE)) %>%
+  gt(rowname_col = "year") %>%
+  grand_summary_rows(fns = list("total" = "sum")) %>%
+  print()
+
+
+```

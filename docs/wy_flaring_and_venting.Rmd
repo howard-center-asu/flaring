@@ -1,0 +1,92 @@
+---
+title: "Wyoming  Flaring and Venting"
+author: "Jimmy Cloutier, Michael McDaniel"
+output:
+    html_document:
+      code_folding: show
+      df_print: paged
+      toc: true
+      toc_float: true
+      code_download: true
+---
+
+```{r setup, message=FALSE, class.source="fold-hide"}
+
+# For general data science
+library(tidyverse)
+
+# For reading Excel files
+library(readxl)
+
+# For data cleaning
+library(janitor)
+
+# For working with datetime
+library(lubridate)
+
+# For pretty tables
+library(knitr)
+library(gt)
+
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+# Introduction 
+
+This notebook contains the analysis of Wyoming's flaring and venting data for the Howard Center Investigation, "....". As part of the investigation, we collected flaring and venting volumes reported by oil and gas companies to state regulators. We then compared annual totals for each state to what was recorded by a U.S. satellite equipped with a Visible Infrared Imaging Radiometer Suite (VIIRS) instrument. (To learn more about the satellite and our analysis of the data it collected, see [this](....) notebook). 
+
+Oil and gas companies in Wyoming use an online portal to report the volumes of gas flared, vented and used on the lease, along with the number of days that flaring and venting occurred. While there is no publicly available form, the Wyoming Oil and Gas Conservation Commission confirmed that the data made public on its website is what is submitted. For reference, [here](http://pipeline.wyo.gov/legacywogcce.cfm) is the WOGCC packet companies follow when they start filing electronically.
+
+Data from the monthly reports (2014-present) are available at the WOGCC’s data [website](http://pipeline.wyo.gov/legacywogcce.cfm), which has statewide and county-specific data sets for each year. Click “Production” and then “Flaring, Vented, Lease Use Data by Selected County and Yr.” From the drop down menu, select “Wyoming” for data from all counties, and then select a given year. Click “submit” to download the file in .xls format. 
+
+
+# Load data
+
+Annual data for Wyoming needed to be downloaded year-to-year, compiled, then cleaned. To see how we did this, contact Jimmy Cloutier at [jclouti3@asu.edu](mailto:jclouti3@asu.edu). The compiled data was saved as an .csv to the project directory.  [THERE WERE SEVERAL BAD ROWS WHICH WE REMOVED, RESULTING IN WHAT APPEARS TO BE 28 MCF MISSING FROM TOTAL VOLUME. SHOULD WE EXPLAIN THIS HERE?]
+
+We uploaded this file into R. Each row represents a company's annual record for flaring and venting from a particular well drilling from a particular formation. 
+
+
+```{r}
+
+wy <- read.csv("wy_flaring_and_venting.csv")
+
+```
+
+
+# Analysis
+
+The story states: From 2014 to 2020, oil and gas companies reported flaring more than 35.9 billion cubic feet of gas. 
+
+The story states: Flared gas volumes, as reported by the state:
+Flared: 35,937,487,000 cubic feet
+Vented: 1,560,682,000 cubic feet
+
+Next, we grouped by year to calculate annual totals, adding an additional column, "combined," that takes the sum of both vented and flared volumes. 
+
+
+```{r calculate annual totals, echo=TRUE}
+
+
+wy_annualtotals <- wy  %>%
+  group_by(yr) %>%
+  summarise(flared = sum(flared, na.rm = TRUE),
+            vented = sum(vented, na.rm = TRUE)) %>%
+  mutate(combined = rowSums(across(c(flared:vented))))
+  
+# Pretty table
+wy_annualtotals %>%
+  gt(rowname_col = "yr") %>%
+  tab_stubhead(label = "year") %>%
+  tab_header(title = "Flaring and Venting Volumes Reported to WOGCC",
+             subtitle = "Flaring and venting volumes in Mcf (thousand cubic feet)") %>%
+  fmt_number(column = "flared":"combined",
+             decimals = 0) %>%
+  grand_summary_rows(fns = list("total" = "sum"), 
+                           columns=("flared":"combined"), 
+                           formatter=gt::fmt_number, 
+                           decimals=0)
+
+```
+

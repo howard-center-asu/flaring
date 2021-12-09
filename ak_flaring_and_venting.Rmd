@@ -1,0 +1,92 @@
+---
+title: "Alaska Flaring & Venting"
+author: "Laura Kraegel, Sarah Suwalsky"
+output:
+    html_document:
+      code_folding: show
+      df_print: paged
+      toc: true
+      toc_float: true
+      code_download: true
+    
+---
+
+```{r setup, message=FALSE, class.source="fold-hide"}
+
+# For general data science
+library(tidyverse)
+
+# For reading and writing data tables and Excel files
+library(data.table)
+library(readxl)
+
+# For data cleaning
+library(janitor)
+
+# For working with datetime
+library(lubridate)
+
+# For pretty tables
+library(knitr)
+library(gt)
+
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+
+# Introduction 
+
+This notebook contains the analysis of Alaska’s flaring and venting data for the Howard Center Investigation, “….”. As part of the investigation, we collected flaring and venting volumes reported by oil and gas companies to state regulators. We then compared annual totals for each state to what was recorded by satellites equipped with Visible Infrared Imaging Radiometer Suite (VIIRS) instruments. (To learn more about the satellites and our analysis of the data they collected, see [this](....) notebook).
+
+In Alaska, oil and gas companies are required to submit monthly reports detailing the volumes of gas flared or vented at each facility to the Alaska Oil and Gas Conservation Commission (AOGCC). They use Form 10-422, the Facility Report of Produced Gas Disposition, which includes fields for the volumes of gas produced, sold, reinjected, flared or vented for one hour or less, flared or vented for more than one hour, and handled via other disposition options. A copy of [Form 10-422](https://www.commerce.alaska.gov/web/Portals/18/Pub/Forms/10-422.pdf) and its [instructions](https://www.commerce.alaska.gov/web/Portals/18/pub/Forms/10-422%20Instructions.pdf) are available from the AOGCC [website](https://www.commerce.alaska.gov/web/aogcc/Forms.aspx). There are two lines, 8 and 9, for producers to report flaring and venting. Volumes must be reported in thousand cubic feet (MCF) at 14.65 PSIA at 60° Fahrenheit.
+
+Data from the monthly reports (1995- present) is available at the AOGCC’s data [website](https://www.commerce.alaska.gov/web/aogcc/Data.aspx) in a data set called “Data Extract,” which is updated monthly. 
+
+#Load Data
+
+Data from the AOGCC site is available in Microsoft Access (.mdb) format. We extracted the relevant data table containing flaring and venting volumes from the file using [MDB Tools](https://github.com/mdbtools/mdbtools) and saved it as a .csv to this directory. The data is current as of Sept. 15, 2021. Companies can amend reports, so disposition data downloaded after then may produce different results than those below. 
+
+```{r load data, include=TRUE}
+
+ak <- read.csv("ak_flaring_and_venting.csv") %>%
+  clean_names() %>%
+  # convert `rpt_date` to datetime & extract year
+  mutate(rpt_date = as.Date(rpt_date, format = "%m/%d/%y"),
+         dt_mod = as.Date(dt_mod, format = "%m/%d/%y"),
+         yr = year(rpt_date)) %>%
+  # select and reorder columns we want 
+  select(disp_key, yr, rpt_date, facility_no, field_pool, opno, flare_gtr, flare_lt, dt_mod)
+
+```
+
+# Total flared/vented volumes 
+
+Claim: "Between 2012 and 2020, oil and gas operators in Alaska reported flaring and venting more than 27 billion cubic feet of gas."
+
+These numbers were calculated by aggregating the totals reported. We created a new column "total" column to add up the volumes from the two separate columns for flaring and venting events that lasted less than on hour and for flaring and venting events that lasted for one hour or longer. We also extracted the year from the report date and created a new `yr` column, then filtered for the years 2012 to 2020, the time frame we were looking at for this investigation. Finally, we grouped by year to calculate the annual totals.
+
+```{r calculate annual totals, echo=TRUE}
+
+
+ak_annualtotals <- ak %>%
+  filter(yr >= 2012 & yr <= 2020) %>%
+  mutate(flared = rowSums (across("flare_lt":"flare_gtr"))) %>%
+  group_by(yr) %>%
+  summarise(flared = sum(flared, na.rm = TRUE ))
+
+
+# Pretty table
+ak_annualtotals %>%
+  gt(rowname_col = "yr") %>%
+  tab_stubhead( label = "year" ) %>%
+  tab_header( title = "Flaring and Venting Volumes Reported to AOGCC",
+             subtitle = "Flaring and venting volumes in MCF (thousand cubic feet)") %>%
+  fmt_number(column = "flared",
+             decimals = 0) %>%
+  grand_summary_rows(fns = list("flared" = "sum"), 
+                           columns=("flared"), 
+                           formatter=gt::fmt_number, 
+                           decimals=0)
+
+```

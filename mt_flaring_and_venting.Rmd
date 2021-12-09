@@ -1,0 +1,102 @@
+---
+title: "Montana Flaring & Venting"
+author: "Jimmy Cloutier, Maya Leachman"
+output:
+    html_document:
+      code_folding: show
+      df_print: paged
+      toc: true
+      toc_float: true
+      code_download: true
+    
+---
+
+```{r setup, message=FALSE, class.source="fold-hide"}
+
+
+# For general data science
+library(tidyverse)
+
+# For reading and writing data tables and Excel files
+library(data.table)
+library(readxl)
+
+# For data cleaning
+library(janitor)
+
+# For working with datetime
+library(lubridate)
+
+# For pretty tables
+library(knitr)
+library(gt)
+
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+# Introduction 
+
+This notebook contains the analysis of Montana's flaring and venting data for the Howard Center Investigation, "....". As part of the investigation, we collected flaring and venting volumes reported by oil and gas companies to state regulators. We then compared annual totals for each state to what was recorded by a U.S. satellite equipped with a Visible Infrared Imaging Radiometer Suite (VIIRS) instrument. (To learn more about the satellite and our analysis of the data it collected, see [this](....) notebook). 
+
+In Montana, oil and gas companies are required to submit monthly reports detailing the volume of gas flared or vented at each lease. They use Form 6, the Report of Production, which includes fields for the volumes of gas produced, sold, flared or vented, used on the lease, and handled via other disposition options. A copy of Form 6 and its instructions is available from the Montana Board of Oil and Gas Conservation, [here](http://dnrc.mt.gov/divisions/board-of-oil-and-gas-conservation/docs/bogc-forms/form-06). There is one line, 25, for the producers to include flaring and venting: “Type or write the total MCFs for the lease of gas (@14.73 PSIA) produced, sold, flared or vented, used on lease, injected, and other.” Reported gas flared or vented is measured in thousand cubic feet (Mcf) at 14.73 PSIA at 60° Fahrenheit, unless permitted otherwise by board.
+
+Data from the monthly reports (2001-present) is available at the MBOGC’s [website](http://www.bogc.dnrc.mt.gov/PRODUCTION/) in a data set called “historical.zip.” The date of its last update is to the left of the linked text. Click the linked text to download the zipped file, and open it to find three data tables in .tab format. The “histLeaseProd.tab” table has disposition data, and the column with volumes of flared or vented gas is named “FlarVnt_Gas.”    
+
+
+# Load data
+
+We saved the disposition data from MBOGC, current as of Nov. 18, 2021, to the project directory. Companies can amend reports, so disposition data downloaded after Nov. 18, 2021 may produce slightly different results than those below.
+
+We cleaned the data and ensured there were no duplicates then saved it as a csv file: `mt_flaring_and_venting.csv` 
+
+
+```{r load_and_clean_data, echo=TRUE}
+
+
+mont <- read.csv("mt_flaring_and_venting.csv")
+
+```
+
+
+# Total flared/vented volumes
+
+The story states: "Combined flared/vented gas volumes, as reported by the state: 40,952,143,000 cubic feet"
+
+The story states: "From 2012 to 2020, Montana companies flared or vented nearly 41 billion cubic feet of gas, according to a Howard Center analysis of state data."
+
+These numbers were calculated by aggregating the totals reported. We extracted the year from the date and created a new `year` column, then filtered for the years 2012 to 2020, the time frame we're looking at for this investigation. Next, we grouped by year to calculate annual totals. These results will be in MCF.
+
+```{r calculate annual totals, echo=TRUE}
+
+
+mont_annualtotals <- mont %>%
+  mutate(year = year(rpt_date)) %>%
+  filter(year >= 2012 & year <= 2020) %>% #We're looking at this time range because this matches the period of time we're looking at for the satellite data that we'll be comparing this to.
+  group_by(year) %>%
+  summarise(total = sum(flar_vnt_gas, na.rm = TRUE))
+  
+# Pretty table
+mont_annualtotals %>%
+  gt(rowname_col = "year") %>%
+  tab_stubhead(label = "year") %>%
+  tab_header(title = "Flaring and Venting Volumes Reported to MBOGC",
+             subtitle = "Flaring and venting volumes in Mcf (thousand cubic feet)") %>%
+  fmt_number(column = "total",
+             decimals = 0) %>%
+  grand_summary_rows(fns = list("total" = "sum"), 
+                           columns=("total"), 
+                           formatter=gt::fmt_number, 
+                           decimals=0)
+
+
+```
+
+
+
+
+
+
+
+
+

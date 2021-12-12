@@ -1,0 +1,188 @@
+---
+title: "New Mexico Flaring & Venting"
+author: "Nicole Sadek, Izzy Koyama, Aydali Campa"
+output:
+    html_document:
+      code_folding: show
+      df_print: paged
+      toc: true
+      toc_float: true
+      code_download: true
+---
+
+
+```{r setup, message=FALSE, class.source="fold-hide"}
+
+# For general data science
+library(tidyverse)
+
+# For reading and writing data tables and Excel files
+library(readxl)
+
+# For data cleaning
+library(janitor)
+
+# For spatial joins
+library(sf)
+
+# For working with datetime
+library(lubridate)
+
+# For pretty tables
+library(knitr)
+library(gt)
+
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+
+This notebook contains the analysis of New Mexico's flaring data for the Howard Center Investigation, "....". As part of the investigation, we collected flaring and venting volumes reported by oil and gas companies to state regulators. We then compared annual totals for each state to what was recorded by a U.S. satellite equipped with a Visible Infrared Imaging Radiometer Suite (VIIRS) instrument. (To learn more about the satellite and our analysis of the data it collected, see [this](....) notebook). 
+
+Our analysis relies on three data sets. 
+
+The first is flaring and venting data collected by the New Mexico Oil Conservation Division (OCD). Oil and gas companies in New Mexico are required to report the volume of gas they flare, vent, lose, and use on lease in addition to the volume of oil and gas they produce at each well on a monthly basis, using the electronic C-115 form. Details regarding the form are available with the OCD [here](https://www.emnrd.nm.gov/ocd/wp-content/uploads/sites/6/C115_Instructions2019.pdf). Reported gas flared or vented is measured in thousand cubic feet (Mcf).
+
+Data from the monthly reports (2014-present) is available at the OCD's [website](https://www.emnrd.nm.gov/ocd/ocd-data/statistics/) in various forms. This analysis uses the data set called "[C-115 Flaring and Venting Data from 2014. By Operator and Year](https://www.emnrd.nm.gov/wp-content/uploads/Copy-of-C-115-Non-Transported-Product-Disposition-By-Operator-VF-Gas-2021-0609.xlsx)."
+
+The second data set we use in our analysis is well history. On the OCD statistics [site](https://www.emnrd.nm.gov/ocd/ocd-data/statistics/), there's a [link](https://wwwapps.emnrd.state.nm.us/ocd/ocdpermitting/Data/Wells.aspx) next to "Well Search by API (history, completions, casing, formation tops, violations, orders and production.) This will take you to the OCD permitting site's well search page. Scroll to the bottom and Next to "Report Format," select "Expanded." Then click "continue." At bottom of the page is a button to "Export to Excel."
+
+The third data set we used is a simple table of yearly drilling permits by type, also available form the OCD statistics [site](https://www.emnrd.nm.gov/ocd/ocd-data/statistics/), next to "APDs issued by Type per Year" 
+
+# Load Data
+
+We compiled and cleaned all this data from the state regulatory agency and saved it new data sets available from the Howard Center [here](). (For more information about our data cleaning, please contact: $EMAIL). 
+
+The data is current as of Dec. 11, 2021
+
+```{r}
+
+# Disposition data
+id <- "1Jx6xkqyru4A2oWad3CauowEefh-a8qcF" # google file ID
+nm_flaring <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download", id)) %>%
+  select(-X) # removes the row number columns from .csv
+
+# APDs
+id <- "1f9MVvZU6dyHVx7FlkZRvpIYmAqsaYvjE"
+nm_apds <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download", id)) %>%
+  select(-X) # removes the row number columns from .csv
+
+# Wells
+id <- "1D6YaFP5h1hXgMi4b058i5u2adHLxQw15"
+nm_wells <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download", id)) %>%
+  select(-X) # removes the row number columns from .csv
+
+```
+
+# Analysis
+
+FACT: Oil and gas companies in New Mexico reported flaring more than 168 billion cubic feet of natural gas in that time frame.
+
+We calculated this figure using the disposition data reported to state regulators. We filtered for the disposition type "flared," then aggregated annual totals.  
+
+```{r}
+
+nm_flaring %>%
+  filter((disposition_type == "Flared" | disposition_type == "Vented")
+         & (year >= 2012 & year <= 2020)) %>%
+  group_by(year, disposition_type) %>%
+  summarise(total = sum(volume, na.rm = TRUE),
+            .groups = "drop") %>%
+  pivot_wider(names_from = disposition_type, values_from = total) %>%
+  rename("Year" = "year") %>%
+  gt(rowname_col = "Year") %>%
+  tab_stubhead(label = "Year") %>%
+  tab_header(title = "Flaring and Venting Volumes Reported to OCD",
+             subtitle = "Flaring and venting volumes in Mcf (thousand cubic feet)") %>%
+  fmt_number(column = "Flared":"Vented",
+             decimals = 2) %>%
+  grand_summary_rows(fns = list("Total" = "sum"), 
+                           columns=("Flared":"Vented"), 
+                           formatter=gt::fmt_number, 
+                           decimals=2)
+
+
+```
+
+FACT: In the first three years of Lujan Grisham’s administration the state issued 6,970 drilling permits — more per year, on average, than her Republican predecessor. 
+
+We first created a new data frame with a new column delineating the serving governor for each year. We also filtered for oil and gas permits. 
+
+We thengrouped by governor and filtered for "Grisham (D)" to get a total number of APDs issued under her administration. 
+
+```{r}
+
+nm_apds_gov <- nm_apds %>%
+  mutate(gov = case_when(year >= 2019 ~ "Grisham (D)",
+                         year < 2019 & year >= 2011 ~ "Martinez (R)",
+                         year < 2011 & year >= 2003 ~ "Richardson (D)")) %>%
+  filter(well_type == "Oil" | well_type == "Gas")
+
+nm_apds_gov %>%
+  filter(gov == "Grisham (D)") %>%
+  group_by(gov) %>%
+  summarise(apds = sum(apds),
+            .groups = "drop")
+
+```
+
+To determine the number of permits issued annually, on average, for each administration, we first calculated the total number of permits issued by each governor. Then we divided those totals by the number years each governor was in office. 
+
+```{r}
+
+nm_apds_gov %>%
+  group_by(gov) %>%
+  summarise(total_apds = sum(apds),
+            avg_per_year = sum(apds)/n())
+
+```
+
+FACT: There are nearly 55,000 active oil and gas wells in New Mexico. 
+
+We have a list of all unplugged wells in New Mexico. We determine the number of active wells by filtering for oil and gas wells, then grouping by  status. 
+
+```{r}
+
+nm_wells %>%
+  filter(type == "Gas" | type == "Oil") %>%
+  group_by (status) %>%
+  summarise(n = n())
+
+```
+
+FACT: San Juan, Rio Arriba, and Sandoval counties in northwest New Mexico are home to nearly 20,000 active wells. 
+
+The well data we have does not include an associated county. It does include coordinates which we can join to the same county shapefile we used in our satellite analysis. 
+
+```{r}
+
+# Read  shapefile 
+counties <- st_read("dtl_cnty.gdb", options = c("METHOD"="SKIP")) %>%  
+  st_transform(crs=4269) %>%
+  select(names:fips)
+
+# Turn wells into points
+point_map <- st_as_sf(nm_wells, coords=c("longitude", "latitude"), crs = 4269)
+
+# Join shapefile and points
+county_wells <- st_join( point_map, counties)
+
+# Turn object back into a table
+county_wells_table <- 
+  county_wells %>%
+  as.data.frame()
+
+```
+
+Now, we can filter for San Juan, Rio Arriba, and Sandoval counties AND filter for oil and gas wells, then group by status. 
+
+``` {r}
+
+
+county_wells_table %>%
+  filter((name == "San Juan" | name == "Rio Arriba" | name == "Sandoval") 
+         & (type == "Oil" | type == "Gas")) %>%
+  group_by(status) %>%
+  summarise(n = n())
+
+```

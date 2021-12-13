@@ -1,0 +1,219 @@
+---
+title: "Three Affiliated Tribes Flaring"
+author: "Isaac Stone Simonelli"
+date: "11/30/2021"
+   html_document:
+     code_download: true
+     code_folding: show
+     toc: true
+     toc_float: true
+     df_print: paged
+     theme: united
+---
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(janitor)
+library(lubridate)
+library(readxl)
+library(gt)
+library(sf)
+
+#this is an attempt to get rid of the scientific notation problem when reading in Excel files. I have no idea if it will work .
+options (scipen = 999)
+
+load("north_dakota_orig.Rda")
+
+```
+
+
+## Introduction: Determine What Flaring Comes from Indian Country
+
+This markdown picks up where the previous one left off, after saving the master North Dakota datasets as an RData file.  The documentation of the dataset is in that document. (For information about that contact Isaac Stone Simonelli at simonelli.isaac@gmail.com)
+
+The primary goal of this is to estimate the amount of flaring that took place within Native American reservations. To do this, we've went ahead and downloaded the shape files created by our GIS team from Federal and Native lands. I unzipped the Native American areas to its own folder in this project. 
+
+I am selecting just the data elements that will be useful in a join. 
+
+This is a little odd because there are some of the older items that didn't have latitude and longitude in the original. In this case, we'll just take items that have flaring amounts. Then see if any of the lat-long are missing.
+
+
+Here, we'll get one latitude and longitude for each location, removing those that don't have any. 
+
+```{r}
+
+last_locations <-
+  nd_master %>%
+  filter ( !is.na( lat)) %>%
+  arrange ( api_wellno, lat ) %>%
+  group_by (api_wellno) %>%
+  select ( api_wellno, last_lat = lat, last_long = long) %>%
+  slice_tail () %>%
+  ungroup()
+
+
+```
+
+
+Now, we'll read in the polygons for Native American lands from the Census, provided by the US National Atlas, and saved by our team in a Google drive. I downloaded just the Native American shapefile from there into a folder called `native_am_areas`.  In this case, I'm only saving some of the variables that were in the original, removing things like the security and source notations. 
+
+
+This is converting it to National Atlas Equal Area projection, which is what everyone is using for the Howard Center. 
+
+```{r}
+
+native_fed_land <- st_read("native_am_areas/GU_Native_Am_Area.shp")  %>%
+  select ( OBJECTID, NAME, AREASQKM, GNIS_ID, GNIS_NAME, FTYPE, NATIVEAMER, POPULATION, geometry) %>%
+  st_transform ( crs = 2163)
+
+```
+
+
+## Converting and Joining Spacial Data Sets
+
+The first step to joining our codes is getting all the coordinates to be working on the same system. We were not able to confirm that the coordinates were in NAD83 yet. The difference between NAD83 (4269) and WGS84 (4326) are pretty minor AND most US data like this should be in NAD83 instead of global/environmental data which is commonly WGS84. Additionally, we went ahead and ran a test using both projections. In this case, it didn't make any difference in our numbers.
+
+
+```{r}
+
+wells_as_map  <- st_as_sf(last_locations, coords=c("last_long", "last_lat"),
+                            crs=4269, # Assuming NAD83
+                           remove=FALSE) %>% 
+                 st_transform(crs = 2163) #This is the code for US National Atlas Equal Area project (above)
+
+```
+
+
+Now, we're going to tag each well as in or out of a Native American area in North Dakota. 
+
+```{r}
+
+wells_with_native_am_area <- st_join (wells_as_map, native_fed_land) %>%
+  clean_names() %>%
+  mutate ( in_out_native_american = if_else ( is.na(name), "Not on Native American land", name )) %>%
+  select ( api_wellno:geometry, in_out_native_american) %>%
+  as.data.frame()
+
+```
+
+
+Now, join it back to the original by well: 
+
+```{r join_to_flare_data}
+
+nd_with_native_land <- 
+  nd_master %>%
+  left_join ( wells_with_native_am_area, by="api_wellno") %>%
+  select ( report_date:file_name, last_lat:in_out_native_american )
+
+```
+
+
+# Analysis State Data
+
+## Flaring Volumes on Tribal Lands
+
+The story states: "The analysis revealed that companies drilling on reservation land reported flaring more than 199 billion cubic feet of natural gas from 2012 to 2020..."
+
+Fort Berthold Indian Reservation isn't the only the Trust Land in North Dakota, there is also "Turtle Mountain." But we're only interested in the Fort Berthold Indian Reservation, so we'll filter for that and then summarize the flaring for all years. (Remember this number is in MCF -- thousands of cubic feet.)
+
+
+```{r fort_berthold_reservation}
+
+nd_with_native_land %>%
+  filter(in_out_native_american == 'Fort Berthold Reservation') %>%
+  summarise ( total_flaring = sum(flared, na.rm=T))
+
+```
+
+
+FACT: "While natural gas infrastructure is an issue throughout the state, it is the crux of increased flaring on the reservation..."
+
+
+```{r flaring_reservations}
+
+nd_with_native_land %>%
+  group_by (year = year(report_date),  in_out_native_american) %>%
+  summarise ( flare_by_type = sum(flared, na.rm=T), .groups="drop_last") %>%
+  mutate ( annual_total = sum(flare_by_type, na.rm=T), 
+            pct_native = flare_by_type / annual_total ) %>%
+  ungroup()  %>% 
+  select (-annual_total) %>%
+  gt (groupname_col = "year" ) %>%
+  summary_rows (groups = TRUE, columns=c(pct_native, flare_by_type), fns = list( ~ sum(.)) , 
+                formatter = fmt_number, 
+                use_seps = TRUE, decimals=0)%>%
+  fmt_number (flare_by_type, use_seps=TRUE, decimals=0) %>%
+  fmt_percent ( pct_native, decimals=1) %>%
+    cols_label (in_out_native_american = "Type of land", 
+              pct_native = "% of annual total", 
+              flare_by_type = "Flared") 
+  
+```
+
+
+## Load Satellite Data
+
+We're going to read in a csv with the satellite data that has already been joined to federal lands. To learn more about the satellite data visit here "......."
+
+
+```{r}
+
+satellite_flaring <- read_csv(file = "satellite_flaring.csv")
+
+```
+
+
+#Analysis
+
+Story states: "However, satellite observations of flaring on the reservation over the same time period showed an additional 42 billion cubic feet of natural gas being burned off."
+
+This reference is taking the total observed by the satellite and subtracting it by what was reported. We can see the total observed on the reservation by doing a quick summary.
+
+```{r}
+
+satellite_flaring %>%
+  filter (tribal_name == 'Fort Berthold Reservation') %>%
+  summarise ( total_flaring = sum(mcf, na.rm=T)) %>%
+  - 199545561 #Here we're subtracting the total reported in the reservation, which you can find the sum of calculated above.
+
+```
+The above also backs the statement in the story:  "The analysis also revealed significant discrepancies between flaring volumes recorded by satellites and the amounts that companies reported to state regulators."
+
+## Comparing Reservation to North Dakota
+
+Story states:  "Satellite data analyzed by the Howard Center for Investigative Journalism revealed that nearly 20% of all flaring from 2012 to 2020 in North Dakota — which flares more gas than any other state besides Texas — occurred on the Fort Berthold Indian Reservation."
+
+```{r}
+
+satellite_flaring %>%
+  group_by (tribal_name) %>%
+  filter (state_name == 'North Dakota') %>%
+  summarise ( total_flaring = sum(mcf, na.rm=T)) %>%
+  mutate (percent = total_flaring / sum (total_flaring))
+
+```
+
+
+## Comparing Reservation to All other Tribal Lands
+
+The story states: "Oil and gas companies flared three times more natural gas on Fort Berthold than on all other Native American lands combined during that time, the data showed."
+
+
+```{r}
+satellite_flaring %>%
+  group_by(tribal_name) %>%
+  filter(!any(is.na(tribal_name))) %>%
+  summarise ( total_flaring = sum(mcf, na.rm=T)) %>%
+  mutate (percent = total_flaring / sum (total_flaring)) %>%
+  arrange(desc(percent))
+ 
+```
+
+
+
+
+

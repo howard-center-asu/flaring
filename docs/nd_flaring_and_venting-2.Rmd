@@ -1,0 +1,69 @@
+---
+title: "nd_flaring_and_venting"
+author: "Isaac Stone Simonelli"
+date: "12/10/2021"
+output: 
+   html_document:
+     code_download: true
+     code_folding: show
+     toc: true
+     toc_float: true
+     df_print: paged
+     theme: united
+---
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(janitor)
+library(lubridate)
+library(readxl)
+library(gt)
+library(sf)
+
+#this is an attempt to get rid of the scientific notation problem when reading in Excel files. I have no idea if it will work .
+options (scipen = 999)
+
+load("north_dakota_orig.Rda")
+
+```
+
+
+This notebook contains the analysis of Oklahoma's flaring and venting data for the Howard Center Investigation, “Gaslit”. As part of the investigation, we collected flaring and venting volumes reported by oil and gas companies to state regulators. We then compared annual totals for each state to what was recorded by a U.S. satellite equipped with a Visible Infrared Imaging Radiometer Suite (VIIRS) instrument. (To learn more about the satellites and our analysis of the data they collected, see this notebook.) 
+Companies in North Dakota are required to report their flaring data on a monthly basis, venting is only allowed for certain emergencies and maintenance. This flaring information is compiled by the state into a monthly form on the North Dakota Department of Mineral Resources's website. 
+
+Downloaded data from: the North Dakota Department of Mineral Resources website’s Monthly Production Report Index (https://www.dmr.nd.gov/oilgas/mprindex.asp). 
+
+The data was downloaded, cleaned, and duplicates (using the  Department of Mineral Resources's criteria) were removed.
+
+
+
+# Analysis
+
+
+There are three claims made in the North Dakota summary that are supported by the findings from analyzing the state reported data.
+
+FACT: Flared gas volumes, as reported to the state: 991,443,446,000 cubic feet
+
+FACT: "It produces more than 438 million barrels of oil in 2020, while reportedly flaring more than 991 billion cubic feet of gas, according to state records."
+
+FACT: From 2012 to 2020, producers in North Dakota reported just under one trillion cubic feet of gas flared, according to a Howard Center analysis. Remember, the totals below are in MCF.
+
+
+```{r flare_totals}
+
+
+nd_master %>%
+  group_by ( year = year(report_date)) %>%
+  summarise ( flaring = sum(flared, na.rm = TRUE))  %>%
+  gt::gt ( ) %>%
+  gt::fmt_number( columns= c(flaring), use_seps=T, decimals=0) %>%
+  grand_summary_rows(fns = list("total" = "sum"),
+                     columns = ("flaring"),
+                     formatter=gt::fmt_number, 
+                           decimals=0)
+
+
+```

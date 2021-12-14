@@ -1,0 +1,210 @@
+---
+title: "Texas Flaring and Venting totals"
+output: 
+   html_document:
+     toc: true
+     toc_float: true
+     code_download: true
+     code_folding: hide
+     theme: united
+     df_print: paged
+---
+
+*NOTE FOR SARAH: THIS IS WHAT YOU DID FOR THE TEXAS TEAM. NO OTHER PERSON HAS TOUCHED IT* 
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(janitor)
+library(RSQLite)  # to access the sqlite table. You won't need this if you've gotten rid of that part.
+library(gt) # for nicer looking printed tables
+library(reactable) # for searchable sortable filterable tables
+
+
+# create a connection to the SQLite database in this project's default folder.
+
+con <- dbConnect(SQLite(), "texas_flare_rawdata.db", extended_types=TRUE)
+
+
+
+```
+
+## Texas Railroad Commission flaring and venting data
+
+
+I created a SQLite database called `texas_flaring_rawdata.db` to hold the production and disposition data from the Texas Railroad Commission because the files were too large to fit into R. 
+
+The tables are: 
+
+* og_lease_cycle_data: The original full dataset of lease production, with approx. 65 million records.
+* og_lease_cycle_disp_data: The original full dataset of dispositions with approx. 40 million records.
+* lease_annual_totals: Aggregation by oil_gas_code, district_no, lease_no of all production (oil, gas, cond, csgd) and total dispositions (oil, gas, cond, csgd), and all flaring amounts (disposition code 04) , 2011 to present.
+* operator_annual_totals: Aggregation by operator and year, including the names. This could have more than one row per year per operator ID, if they had different names during the year.  , 2011 to present
+* lease_june_names: All of the text fields for june of each year. There appear to be about 10,000 rows missing from this, in which there was no June submission. , 2011 to present
+
+The flaring data was downloaded in October 2021, reflecting reports as of the end of September. 
+ 
+
+### Read the production and disposition table
+
+This depends on you having the large sql database in the same folder as this project. If you wanted, you could skip this step and save the operator master as an R data table, and it would be disconnected from the sql data. 
+
+In this case, I save it as an R data file, and then remove the connection. The eval=FALSE means that, when knitted, this chunk won't run. 
+
+```{r get_operators, eval=FALSE}
+
+annual_master <- dbGetQuery(con, "select * from lease_annual_totals")
+saveRDS( annual_master, file="lease_master.RDS")
+dbDisconnect(con)
+rm(list=ls() )
+
+
+```
+
+Now load the lease totals from the r file, so you don't need the sql dataset: 
+
+
+```{r load_operator_rds, eval=TRUE}
+
+lease_master <- 
+  readRDS("lease_master.RDS") %>%
+  # just get all the column names to lower case
+  clean_names() 
+
+
+glimpse(lease_master)
+
+
+```
+
+
+### Total flaring and venting by year
+
+Codes 04 for gas and csgd are the flaring and venting numbers. (Code 04 for gas and condensate are different events. )
+
+
+```{r sum_leases}
+
+annual_flaring_totals <- 
+  lease_master %>%
+  group_by ( cycle_year) %>%
+  summarise  ( total_flaring_venting = sum(total_gas_code04 + total_csgd_code04))
+
+
+
+annual_flaring_totals %>%
+  filter ( cycle_year < 2021 & cycle_year > 2011) %>%
+  gt::gt() %>%
+  tab_header ( title = "Total Venting and flaring in Texas") %>%
+  fmt_number ( columns=total_flaring_venting, decimals=0, use_seps=TRUE) %>%
+  cols_label ( cycle_year="", total_flaring_venting = "MCF")
+  
+
+```
+### Leases with a lot of flaring
+
+This starts over with the connection to the sql database, then picks out the top 1,000 leases in the state over the period 2012 to 2020. It then attaches the most recent names for the codes found in the data for lease name, operator name, etc. 
+
+(The code lets SQL do the summary by lease, which is much faster than in R. I removed the missing data and turned it into 0 in SQL by using the `total` function instead of `sum` function)
+
+
+### Get top 1000 leases
+
+We can bring in the lease names to R an match them, using the most recent one. That took a while, so I saved it here in R as a data file so we don't have to do it again. 
+
+
+```{r get_lease_names, eval=FALSE}
+
+lease_names <- dbGetQuery (con, "select * from lease_june_names order by 
+                                 oil_gas_code, district_no, lease_no, cycle_year")
+
+most_recent_name <- 
+  lease_names %>%
+  clean_names() %>%
+  mutate (match_code = paste(oil_gas_code, district_no, lease_no, sep="_")) %>%
+  group_by (match_code) %>%
+  slice_max (order_by=cycle_year, n=1) %>%
+  select ( match_code, lease_name, asofyear=cycle_year, operator_name, 
+           field_no, oilgas_field_name, field_type, gas_well_no)
+
+
+
+saveRDS( most_recent_name, file="lease_names.RDS", compress=FALSE)
+
+```
+
+
+Now use the table I saved to get the most recent names.: 
+
+```{r apply_names}
+
+
+most_recent_name <- readRDS(file="lease_names.RDS")
+
+# get a unique identifier so I can merge by one thing.
+
+lease_flaring <- 
+  lease_master %>%
+  filter ( cycle_year > '2011' & cycle_year < '2021') %>%
+  select ( oil_gas_code:cycle_year, total_gas_code04, total_csgd_code04 ) %>%
+  mutate (match_code = paste(oil_gas_code, district_no, lease_no, sep="_"), 
+          annual_flare_vent = total_gas_code04 + total_csgd_code04,
+          .before=1)
+  
+
+lease_totals <- 
+  lease_flaring %>%
+  group_by ( match_code) %>%
+  summarise  ( lease_grand_total = sum(annual_flare_vent)) %>%
+  slice_max (n= 1000, order_by=lease_grand_total)  %>%
+  mutate ( rank = row_number() , .before=1) %>%
+  inner_join (lease_flaring, by="match_code") %>%
+  left_join ( most_recent_name, by="match_code") %>%
+  arrange ( desc(lease_grand_total), desc(cycle_year))
+    
+
+saveRDS (lease_totals, file="top_1000_list.RDS", compress=FALSE)
+
+```
+
+
+Now we can turn it on its head and create a table that can be searched and sorted. 
+
+
+```{r get_leases}
+
+lease_totals %>%
+  select (rank, oil_gas_code, district_no,  lease_no, lease_name, operator_name, oilgas_field_name, field_type, gas_well_no,
+          lease_grand_total, cycle_year, annual_flare_vent) %>%
+  pivot_wider ( names_from = cycle_year, values_from = annual_flare_vent, values_fill = 0) %>%
+  reactable (  
+      searchable=TRUE, 
+      filterable=FALSE,
+      #compact=TRUE, 
+      theme=reactableTheme(color="dark gray", 
+                           style=list(fontSize="85%") 
+                           ) , 
+      defaultColDef = colDef ( format = colFormat(separators=TRUE, digits=0), minWidth=75), 
+      columns = ( list (
+         operator_name = colDef(minWidth = 150, align="left", name="Operator", filter=TRUE), 
+         lease_name  = colDef (minWidth = 150, name="Lease name", filter=TRUE),
+         oil_gas_code = colDef (name = "Type", minWidth=50), 
+         district_no = colDef(name="District", minWidth=50), 
+         lease_no = colDef(name= "lease ID", minWidth=50), 
+         oilgas_field_name = colDef(minWidth=150 , name= "Field name", filter=TRUE), 
+         field_type = colDef(name = "Field type"), 
+         gas_well_no = colDef (name = "Well ID", minWidth=50), 
+         lease_grand_total = colDef (name = "All years") 
+      )
+    )
+)
+
+```
+
+
+
+
+
+

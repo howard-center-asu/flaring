@@ -53,7 +53,7 @@ The third data set we used is a simple table of yearly drilling permits by type,
 
 We compiled and cleaned all this data from the state regulatory agency and saved it new data sets available from the Howard Center [here](). (For more information about our data cleaning, please contact: $EMAIL). 
 
-The data is current as of Dec. 11, 2021
+The data is current as of Dec. 11, 2021.
 
 ```{r}
 

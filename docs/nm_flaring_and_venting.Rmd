@@ -104,11 +104,11 @@ nm_flaring %>%
 
 ```
 
-FACT: In the first three years of Lujan Grisham’s administration the state issued 6,970 drilling permits — more per year, on average, than her Republican predecessor. 
+FACT: In the first three years of Lujan Grisham’s administration, the state issued 6,970 drilling permits — more per year, on average, than her Republican predecessor. 
 
 We first created a new data frame with a new column delineating the serving governor for each year. We also filtered for oil and gas permits. 
 
-We thengrouped by governor and filtered for "Grisham (D)" to get a total number of APDs issued under her administration. 
+We then grouped by governor and filtered for "Grisham (D)" to get a total number of APDs issued under her administration. 
 
 ```{r}
 
@@ -137,7 +137,7 @@ nm_apds_gov %>%
 
 ```
 
-FACT: There are nearly 55,000 active oil and gas wells in New Mexico. 
+FACT: There are nearly 51,000 active oil and gas wells in New Mexico. 
 
 We have a list of all unplugged wells in New Mexico. We determine the number of active wells by filtering for oil and gas wells, then grouping by  status. 
 
@@ -150,16 +150,20 @@ nm_wells %>%
 
 ```
 
-FACT: San Juan, Rio Arriba, and Sandoval counties in northwest New Mexico are home to nearly 20,000 active wells. 
+FACT: San Juan, Rio Arriba, and Sandoval counties in northwest New Mexico are home to nearly 21,000 active wells. 
 
-The well data we have does not include an associated county. It does include coordinates which we can join to the same county shapefile we used in our satellite analysis. 
+Although the well data we have does not include an associated county, it does include coordinates which we can join to the county shape file we used in our satellite analysis. This shape file comes from the U.S. Census Bureau.  
 
 ```{r}
 
-# Read  shapefile 
-counties <- st_read("dtl_cnty.gdb", options = c("METHOD"="SKIP")) %>%  
+temp_shapefile <- tempfile()
+download.file("https://www2.census.gov/geo/tiger/TIGER2021/COUNTY/tl_2021_us_county.zip", temp_shapefile)
+unzip(temp_shapefile)
+
+counties <- read_sf("tl_2021_us_county.shp", 
+                    options = c("METHOD"="SKIP")) %>%  
   st_transform(crs=4269) %>%
-  select(names:fips)
+  clean_names()
 
 # Turn wells into points
 point_map <- st_as_sf(nm_wells, coords=c("longitude", "latitude"), crs = 4269)

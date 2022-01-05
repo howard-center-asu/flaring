@@ -39,7 +39,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 This notebook contains the analysis of New Mexico's flaring data for the Howard Center Investigation, "....". As part of the investigation, we collected flaring and venting volumes reported by oil and gas companies to state regulators. We then compared annual totals for each state to what was recorded by a U.S. satellite equipped with a Visible Infrared Imaging Radiometer Suite (VIIRS) instrument. (To learn more about the satellite and our analysis of the data it collected, see [this](....) notebook). 
 
-Our analysis relies on three data sets. 
+Our analysis relies on four data sets. 
 
 The first is flaring and venting data collected by the New Mexico Oil Conservation Division (OCD). Oil and gas companies in New Mexico are required to report the volume of gas they flare, vent, lose, and use on lease in addition to the volume of oil and gas they produce at each well on a monthly basis, using the electronic C-115 form. Details regarding the form are available with the OCD [here](https://www.emnrd.nm.gov/ocd/wp-content/uploads/sites/6/C115_Instructions2019.pdf). Reported gas flared or vented is measured in thousand cubic feet (Mcf).
 
@@ -47,7 +47,9 @@ Data from the monthly reports (2014-present) is available at the OCD's [website]
 
 The second data set we use in our analysis is well history. On the OCD statistics [site](https://www.emnrd.nm.gov/ocd/ocd-data/statistics/), there's a [link](https://wwwapps.emnrd.state.nm.us/ocd/ocdpermitting/Data/Wells.aspx) next to "Well Search by API (history, completions, casing, formation tops, violations, orders and production.) This will take you to the OCD permitting site's well search page. Scroll to the bottom and Next to "Report Format," select "Expanded." Then click "continue." At bottom of the page is a button to "Export to Excel."
 
-The third data set we used is a simple table of yearly drilling permits by type, also available form the OCD statistics [site](https://www.emnrd.nm.gov/ocd/ocd-data/statistics/), next to "APDs issued by Type per Year" 
+The third data set we used is a simple table of yearly drilling permits by type, also available form the OCD statistics [site](https://www.emnrd.nm.gov/ocd/ocd-data/statistics/), next to "APDs issued by Type per Year."
+
+The final, fourth data set is of well completions. The Oil Conservation Division releases weekly well activity reports on its permitting [website](https://wwwapps.emnrd.nm.gov/ocd/ocdpermitting/Reporting/Activity/WeeklyActivity.aspx). We manual copied data from each well completion report between Jan. 6, 2019 -- when Gov. Grisham entered office -- to Nov. 21, 2021 to a spreadsheet saved [here](https://drive.google.com/file/d/1qsnPcklw8MS_TDbzRS61lISRxIilLJEf/view?usp=sharing). 
 
 # Load Data
 
@@ -60,17 +62,25 @@ The data is current as of Dec. 11, 2021.
 # Disposition data
 id <- "1Jx6xkqyru4A2oWad3CauowEefh-a8qcF" # google file ID
 nm_flaring <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download", id)) %>%
-  select(-X) # removes the row number columns from .csv
+  clean_names() %>%
+  select(-x) # removes the row number columns from .csv
 
 # APDs
 id <- "1f9MVvZU6dyHVx7FlkZRvpIYmAqsaYvjE"
 nm_apds <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download", id)) %>%
-  select(-X) # removes the row number columns from .csv
+  clean_names() %>%
+  select(-x) # removes the row number columns from .csv
 
 # Wells
 id <- "1D6YaFP5h1hXgMi4b058i5u2adHLxQw15"
 nm_wells <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download", id)) %>%
-  select(-X) # removes the row number columns from .csv
+  clean_names() %>%
+  select(-x) # removes the row number columns from .csv
+
+# Well completions
+id <- "1qsnPcklw8MS_TDbzRS61lISRxIilLJEf"
+nm_completions <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download", id)) %>%
+    clean_names()
 
 ```
 
@@ -190,3 +200,17 @@ county_wells_table %>%
   summarise(n = n())
 
 ```
+
+FACT: 2,800 wells were completed during Gov. Grisham's administration. 
+
+To calculate the number of completions during the governor's administration, we filtered `compl_date` variable, identifying the date of the completion, for the years 2019 to 2021. 
+
+```{r}
+
+nm_completions %>%
+  mutate(year = year(as.Date(compl_date, "%m/%d/%y"))) %>%
+  filter(year >= 2019) %>%
+  summarise(n = n())
+
+```
+

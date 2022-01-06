@@ -46,201 +46,22 @@ sf::sf_use_s2(FALSE)
 
 Data of satellite-observed natural gas flaring was downloaded from the Colorado School of Mines Earth Observation Group, [here](https://eogdata.mines.edu/download_global_flare.html): https://eogdata.mines.edu/download_global_flare.html. You'll need to create an EOG account. All the .csv files were saved to a `viirs_satellite` folder in this directory.  
 
-Let's import that data now; we want the "upstream" sheet. 
+After cleaning the data, we used county and state shape files to spatially join the flaring points. Another spatial join with data of federal and tribal lands/waters to identify and flag those jurisdictions: state, federal, and tribal.
 
-```{r echo=TRUE}
-
-file_list <- paste0('viirs_satellite/', list.files(path='viirs_satellite', pattern= '.xlsx$'))
-
-flares <-
-  map_df(file_list, ~{
-  sheets <- excel_sheets(.x)
-  sheet_name <- sheets %>% str_subset('(flares|flare)(\\ |\\_)upstream$') # the sheet in each file has a different variation of the name "flares upstream"
-  read_excel(.x, sheet_name)},
-  .id = "file_num") %>%
-  janitor::clean_names() %>%
-  mutate (orig_file = file_list[as.numeric(file_num)])
-  
-
-flares %>%
-    count(orig_file)
-
-```
-
-
-I opened each file separately in Excel to ensure I read in the right number of rows for each upstream sheet -- it checks out. 
-
-Now, we'll pivot to a tidy, tall data set, so we have only one column for volumes. I know I can get the clear observations and detection frequencies, too, but for right now, I only care about the volumes. 
-
-
-```{r echo=TRUE}
-
-flares_pivoted <- 
-  flares %>%
-  filter(country == "United States") %>%
-  pivot_longer (names_to = "year_variable", values_to="bcm", 
-                 cols=c(bcm_2012, bcm_2013, bcm_2014, bcm_2015, bcm_2016, 
-                        bcm_2017, bcm_2018, bcm_2019, bcm_2020))  %>%
-  mutate (year = str_sub( year_variable, -4, -1)) %>%
-  rowid_to_column() %>% # adds unique row id 
-  select (rowid, country, latitude, longitude, year, bcm, orig_file)
-
-```
-
-## Spatial join
-
-Now let's associate these points with counties and states using spatial joins. 
-
-We start by reading in the county and state boundaries. 
-
-```{r read_counties}
-
-counties <- st_read("dtl_cnty.gdb", options = c("METHOD"="SKIP")) %>% st_transform(crs=2163) # this transforms the projection to US National Atlas Equal Area
-
-```
-
-Next, we transform our points into spatial objects. 
-
-```{r results="hold"}
-
-point_map <- st_as_sf( flares_pivoted, coords=c("longitude", "latitude"), 
-                       crs=4326,   # this is the code for the WGS 84 projection in which the satellite data was created
-                       remove=FALSE) %>%  # this keeps the original longitude and latitude columns in the output. 
-                       st_transform(crs=2163) # this transforms the projection to US National Atlas Equal Area 
-
-```
-
-
-## Join the tables
-
-Now we want to apply information from the detailed county map to the points so we know what county they're in. 
-
-First, I'm going to get rid of a bunch of the columns in the county detail.  Then, we just use st_join(...) to put them together. 
-
-```{r get_counties}
-
-
-counties_keep <- counties %>% janitor::clean_names() %>%
-  select (county_name = name, state_name, state_fips, cnty_fips, fips, population, shape_area)
-
-county_flares <- st_join( point_map, counties_keep)
-
-```
-
-Now let's turn this back into a table. 
+That information was saved as .csv, which we'll load now.
 
 ```{r}
 
-county_flares_table <- 
-  county_flares %>%
-  as.data.frame()
-
-```
-
-Our assumption is that all the flares that aren't associated with a state are offshore. We have spot checked this but can map these points later to verify. Right now, let's create a "flag" column delineating offshore from non-offshore flares. 
-
-```{r}
-
-county_flares_table <- county_flares_table %>%
-  mutate(offshore = if_else(is.na(state_name), TRUE, FALSE)) %>%
-  select(rowid:bcm, county_name:fips, offshore, orig_file) # columns we want to keep 
-
-```
-
-
-## Federal and tribal land
-
-Now we need to join what we have to the tribal and federal shapes files we got from Shea and Amy, so we can identify the jurisdiction -- whether federal, tribal, or state -- for each flare. 
-
-We'll start by reading both shapes files and then work with the federal areas first. Notice that we'll transform the projection to US National Atlas Equal Area as well. (Be patient; these are big files and it will take some time to import and transform them.)
-
-```{r read fed and tribal areas}
-
-fed_areas <- st_read("Nat_Map_Fed_Areas/GU_Reserve.shp", options = c("METHOD"="SKIP")) %>% st_transform(crs=2163)
-tribal_areas <- st_read("Nat_Map_Fed_Areas/GU_Native_Am_Area.shp", options = c('Method'='SKIP')) %>% st_transform(crs=2163) 
-
-```
-
-Now we'll join each to `point_map` 
-
-Due to the way Alaskan tribal areas are divided, the following two polygons overlap: Alaska Native Village Statistical Areas (ANVSA) and native corporations. An ANVSA is census designation; the corporations own the land, so we'll remove the ANVSAs to avoid overlap.  
-
-
-```{r}
-
-fed_areas_keep <- fed_areas %>% 
-  janitor::clean_names() %>% 
-  rename('federal_name' = 'name') %>%
-  mutate(federal_land = TRUE) %>% # identifies these records as being associated with federal land
-  select(federal_name, federal_land, shape_area) # keep just the following columns
-
-fed_flares <- st_join(fed_areas_keep, point_map, left = FALSE)
-
-tribal_areas_keep <- tribal_areas %>%
-  janitor::clean_names() %>% 
-  rename('tribal_name' = 'name') %>%
-  filter(!str_detect(tribal_name, 'ANVSA$')) %>% # removes ANVSAs to avoid overlap
-  mutate(tribal_land = TRUE) %>% # identifies these records as being associated with tribal land
-  select(tribal_name, tribal_land, shape_area) # keep just the following columns
-
-tribal_flares <- st_join(tribal_areas_keep, point_map, left= FALSE)
-```
-
-Let's turn these back into tables...
-
-```{r}
-
-fed_flares_table <- 
-  fed_flares %>%
-  as.data.frame() %>%
-  select(rowid, federal_land, federal_name)
-
-tribal_flares_table <-
-  tribal_flares %>%
-  as.data.frame() %>%
-  select(rowid, tribal_land, tribal_name)
+id <- "17-FBaY79bGB_ITt-73K4kIUnMHhN-pDS" # google file ID
+flares_flaring <- read.csv(sprintf("https://drive.google.com/file/d/17-FBaY79bGB_ITt-73K4kIUnMHhN-pDS/view?usp=sharing", id))
 
 
 ```
-
-... and now join all three tables together. (I did it this way to check for overlapping areas)
-
-```{r}
-
-flares_master <- county_flares_table %>%
-  left_join(fed_flares_table, rowid = rowid) %>%
-  left_join(tribal_flares_table, rowid = rowid)
-
-```
-
-I want to create a column that identifies the administrative type for each row -- state, offshore, federal, and tribal -- but we need to account for overlapping areas, or points that fall within both federal and tribal boundaries. Let's see see which flares fall within multiple jurisdictions. 
-
-```{r}
-
-flares_master %>% filter(tribal_land == TRUE & federal_land == TRUE) %>%
-  arrange(rowid)
-
-```
-There are 90 points that show up in both federal and tribal land, all of them in Alaska and Utah. Tribal lands take precedence, so if a point falls within both jurisdictions, we'll treat it as falling within tribal land. 
-
-```{r}
-
-flares_final <- flares_master %>%
-  mutate(admin = case_when(offshore == TRUE ~ 'offshore',
-                           tribal_land == TRUE ~ 'tribal',
-                           federal_land == TRUE & is.na(tribal_land) ~ 'federal',
-                           offshore == FALSE & is.na(federal_land) & is.na(tribal_land) ~ 'state')) %>%
-  mutate(mcf = bcm * 35314666.572222) %>% # converts bcm to mcf 
-  select(rowid:bcm, mcf, county_name:fips, admin, tribal_name, federal_name, orig_file) # reordering and removing the three columns we no longer need
-
-```
-
-We now have a master table with all the satellite data for 2012 to 2020, with flares associated with a county, state, and (if applicable) offshore, federal, or tribal jurisdiction. 
 
 
 # Analysis
 
-We'll start by getting annual flaring volume totals for each state. (The `gt` package in the following code chunks helps us make a pretty, easy-to-read table). 
+Totals annual flaring volume for each state was calculated this way. This supports numerous facts in the project from total amounts flared to flaring trends over the period examined.
 
 ```{r}
 
@@ -280,40 +101,14 @@ flares_final %>%
                            formatter=gt::fmt_number, 
                            decimals=0)
 
-
 ```
 
-By far, the states with the most satellite-recorded flaring are Texas, North Dakota, and New Mexico. 
 
-Now, let's compare and contrast flaring in each administrative type. 
+A couple comparisons between jurisdiction of flaring within a state were made. 
 
-```{r}
+FACT: According to satellite data, 81% of the flaring in Utah happens on tribal land, 17% on state land and 2% on federal land.
 
-flares_final %>%
-  group_by(year, admin) %>%
-  summarise(mcf = sum(mcf, na.rm = TRUE),
-            .groups = 'drop') %>%
-  pivot_wider(names_from = year, values_from = mcf) %>%
-  mutate('Total' = rowSums(across(c('2012':'2020')))) %>% # To calculate total for years 2012-2020
-  arrange(desc(Total)) %>%
-  # following code makes a pretty table
-  gt( rowname_col = "admin") %>% 
-  tab_stubhead(label = "Admin") %>%
-  tab_header(title = "Satellite Recorded Flaring",
-             subtitle = "Flaring volumes in Mcf (thousand cubic feet) recorded by VIIRS satellite from 2012 - 2020") %>%
-  fmt_number(column = '2012':'Total',
-             decimals = 0) %>%
-  grand_summary_rows(fns = list('Total' = "sum"), 
-                           columns=('2012':'Total'), 
-                           formatter=gt::fmt_number, 
-                           decimals=0)
-
-
-```
-
-The vast majority of flaring is occurring on state/private land. Surprisingly, there's more flaring on tribal land, however, then federal land. 
-
-Given our interest in how tribal governments handle flaring and venting compared to state and federal agencies, let's see how flaring across different jurisdictions compare between states. 
+FACT: Satellite data analyzed by the Howard Center revealed that oil and gas operators on federal lands in New Mexico flared more than 138 billion cubic feet of gas, nearly half of the gas burned off in the state between 2012 and 2020.
 
 
 ```{r}
@@ -347,6 +142,13 @@ flares_final %>%
 
 ```
 
-47% of satellite-recorded flaring fell under federal jurisdiction in New Mexico, nearly four times more than in any other state. 
 
-100% of satellite-recorded flaring fell under tribal jurisdiction in Alaska, followed by 81% in Utah, 74% in Oklahoma, and 19% in North Dakota. 
+
+
+
+
+
+
+
+
+

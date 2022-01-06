@@ -1,0 +1,117 @@
+---
+title: "Census Data for Texas Counties with Highest Flaring Volumes"
+author: "Laura Kraegel, Jimmy Cloutier"
+output:
+    html_document:
+      code_folding: show
+      df_print: paged
+      toc: true
+      toc_float: true
+      code_download: true
+---
+
+```{r setup, message=FALSE, class.source="fold-hide}
+
+
+# For general data science
+library(tidyverse)
+
+# For reading and writing data tables and Excel files
+library(data.table)
+library(readxl)
+
+# For data cleaning
+library(janitor)
+
+# For working with datetime
+library(lubridate)
+
+# For pretty tables
+library(knitr)
+library(gt)
+
+knitr::opts_chunk$set(echo = TRUE)
+
+
+```
+
+
+# Introduction 
+
+This notebook contains an analysis of U.S. Census data for Texas for the Howard Center Investigation, "....". As part of the investigation, we identified the Texas counties with the highest flaring volumes in 2020 using data from the Colorado School of Mines' Earth Observation Group, which leverages imagery from satellites equipped with Visible Infrared Imaging Radiometer Suite (VIIRS) instruments. (To learn more about the satellites, see [this](....) notebook). Then, we analyzed race and ethnicity data for Texas' counties using 2020 Decennial Census P.L. 94-171 Redistricting Data, available at the U.S. Census' [website] here (https://data.census.gov/cedsci/table?t=Race%20and%20Ethnicity&g=0400000US48,48%240500000&tid=DECENNIALPL2020.P2).
+
+
+#Load the Data Sets
+
+After cleaning the data, we used county and state shape files to spatially join the flaring points. Another spatial join with data of federal and tribal lands/waters to identify and flag those jurisdictions: state, federal, and tribal.
+
+That information was saved as .csv, which we'll load now.
+
+We saved the Census data, downloaded on Nov. 23, 2021, to the project directory.
+
+```{r load and clean data, echo=TRUE}
+
+
+#flaring data set
+flare_data <- read_csv( "flares_final.csv" , col_names = TRUE )
+
+#census data set
+census_data <- read_csv( "DECENNIALPL2020.P2_data_with_overlays_2021-11-23T115955.csv" , col_names = TRUE, skip = 1 ) %>%
+  clean_names()
+
+
+```
+
+
+#Prepare and Join the Data Sets
+
+We created a new data frame from the flaring data set with the relevant data for our investigation. We did the same for the Census data, as well as create a new column, "fips," to extract the FIPS code from the last five digits of the GEO ID column. Then, we joined the two data sets using the "fips" columns in each. 
+
+```{r}
+
+
+#selecting relevant location, time period, and columns for the flaring data set
+flare_data1 <- flare_data %>%
+  filter( country == "United States"  ) %>%
+  filter( state_name == "Texas" ) %>%
+  filter( year == "2020" ) %>%
+  select( fips, county_name, mcf, bcm )
+
+#creating a new column extracting the county FIPS code and selecting relevant columns for the census data set
+census_data1 <- census_data %>%
+  mutate( fips = str_sub( id , start = -5 ) ) %>%
+  select( fips, total, total_hispanic_or_latino, total_not_hispanic_or_latino_population_of_one_race_black_or_african_american_alone, total_not_hispanic_or_latino_population_of_one_race_american_indian_and_alaska_native_alone, total_not_hispanic_or_latino_population_of_one_race_asian_alone, total_not_hispanic_or_latino_population_of_one_race_native_hawaiian_and_other_pacific_islander_alone, total_not_hispanic_or_latino_population_of_one_race_some_other_race_alone, total_not_hispanic_or_latino_population_of_two_or_more_races )
+
+#joining the two data sets
+joined_data <- flare_data1 %>%
+  left_join( census_data1, by=c( "fips" = "fips" ) ) %>%
+  glimpse()
+
+```
+
+
+#Analyze the Joined Data
+
+
+FACT: This trend was most prevalent among Latino populations, which were exposed to more flares on average than the white population, according to Cushing.
+
+FACT: An analysis of U.S. Census and satellite data by the Howard Center revealed similar demographics. In 12 of the 15 Texas counties with the highest satellite-recorded flaring volumes, more than 50 percent of people identified as Latino, non-white or multiracial.
+
+
+```{r}
+
+#calculating percentages of respondents who identified as Hispanic or Latino, as one race other than white, or as two or more races
+joined_data %>%
+  
+  group_by( county_name, total, total_hispanic_or_latino, total_not_hispanic_or_latino_population_of_one_race_black_or_african_american_alone, total_not_hispanic_or_latino_population_of_one_race_american_indian_and_alaska_native_alone, total_not_hispanic_or_latino_population_of_one_race_asian_alone, total_not_hispanic_or_latino_population_of_one_race_native_hawaiian_and_other_pacific_islander_alone, total_not_hispanic_or_latino_population_of_one_race_some_other_race_alone, total_not_hispanic_or_latino_population_of_two_or_more_races ) %>%
+  
+  summarise( county_volume = sum( mcf, na.rm =  TRUE), .groups = "drop" ) %>%
+  
+  mutate( 'total_hisp_lat_one_race_other_than_white_more_than_one_race' = rowSums( across( c( 'total_hispanic_or_latino':'total_not_hispanic_or_latino_population_of_two_or_more_races' ) ) ) ,
+          
+          'pct_hisp_lat_one_race_other_than_white_more_than_one_race' = ( ( total_hisp_lat_one_race_other_than_white_more_than_one_race / total ) * 100 ) ) %>%
+  
+  arrange( desc( county_volume ) )
+
+
+```

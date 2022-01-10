@@ -167,10 +167,10 @@ Although the well data we have does not include an associated county, it does in
 ```{r}
 
 temp_shapefile <- tempfile()
-download.file("https://www2.census.gov/geo/tiger/TIGER2021/COUNTY/tl_2021_us_county.zip", temp_shapefile)
+download.file("https://www2.census.gov/geo/tiger/TIGER2020/COUNTY/tl_2020_us_county.zip", temp_shapefile)
 unzip(temp_shapefile)
 
-counties <- read_sf("tl_2021_us_county.shp", 
+counties <- read_sf("tl_2020_us_county.shp", 
                     options = c("METHOD"="SKIP")) %>%  
   st_transform(crs=4269) %>%
   clean_names()

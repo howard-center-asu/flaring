@@ -1,0 +1,154 @@
+---
+title: "Satellite Records of Flaring and Venting on Tribal Land"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    theme: lumen
+    df_print: paged
+    toc: true
+    toc_float: true
+    code_download: true
+---
+
+
+
+```{r setup, include=FALSE}
+
+library(knitr)
+library(rmdformats)
+
+# Global options
+options(max.print="75")
+opts_chunk$set(echo=TRUE,
+	             cache=FALSE,
+               message=FALSE,
+               warning=FALSE)
+
+opts_knit$set(width=75)
+options(digits = 10, scipen = 99)
+
+# Special libraries
+library(tidyverse)
+library(sf)
+library(readxl)
+library(leaflet)  # if you want to make a clickable map
+library(leaflet.extras) # just has a few things to make things easier.
+library(gt) # for pretty tables
+
+# For plots
+library(ggplot2)
+
+sf::sf_use_s2(FALSE)
+
+```
+
+# Preparing data 
+
+Data of satellite-observed natural gas flaring was downloaded from the Colorado School of Mines Earth Observation Group, [here](https://eogdata.mines.edu/download_global_flare.html): https://eogdata.mines.edu/download_global_flare.html. You'll need to create an EOG account. All the .csv files were saved to a `viirs_satellite` folder in this directory.  
+
+After cleaning the data, we used county and state shape files to spatially join the flaring points. Another spatial join with data of federal and tribal lands/waters to identify and flag those jurisdictions: state, federal, and tribal.
+
+That information was saved as .csv, which we'll load now.
+
+```{r}
+
+id <- "17-FBaY79bGB_ITt-73K4kIUnMHhN-pDS" # google file ID
+flares_flaring <- read.csv(sprintf("https://drive.google.com/file/d/17-FBaY79bGB_ITt-73K4kIUnMHhN-pDS/view?usp=sharing", id))
+
+
+```
+
+
+# Analysis
+
+Totals annual flaring volume for each state was calculated this way. This supports numerous facts in the project from total amounts flared to flaring trends over the period examined.
+
+```{r}
+
+flares_final %>%
+  filter(state_name == "Texas" | 
+         state_name == "North Dakota" | 
+         state_name == "New Mexico" | 
+         state_name == "Alaska" | 
+         state_name == "Wyoming" | 
+         state_name == "Montana" | 
+         state_name == "Utah" | 
+         state_name == "Colorado" | 
+         state_name == "Oklahoma" |
+         state_name == "Pennsylvania" | 
+         state_name == "West Virginia" |
+         state_name == "Kansas" |
+         state_name == "Louisiana" | 
+         is.na(state_name)) %>%
+  group_by(year, state_name) %>%
+  summarise(mcf = sum(mcf, na.rm = TRUE),
+            .groups = 'drop') %>%
+  pivot_wider(names_from = year, values_from = mcf) %>%
+  mutate('Total' = rowSums(across(c('2012':'2020'))),
+         "Total (%)" = (Total/sum(Total))*100) %>% # To calculate total for years 2012-2020
+  arrange(desc(Total)) %>%
+  # following code makes a pretty table
+  gt( rowname_col = "state_name") %>% 
+  tab_stubhead(label = "State") %>%
+  tab_header(title = "Satellite Recorded Flaring",
+             subtitle = "Flaring volumes in Mcf (thousand cubic feet) recorded by VIIRS satellite from 2012 - 2020") %>%
+  tab_footnote(footnote = "Flares unassociated with a state are from offshore platforms",
+               locations = cells_stub(rows = 4)) %>%
+  fmt_number(column = '2012':'Total',
+             decimals = 0) %>%
+  grand_summary_rows(fns = list('Total' = "sum"), 
+                           columns=('2012':'Total'), 
+                           formatter=gt::fmt_number, 
+                           decimals=0)
+
+```
+
+
+A couple comparisons between jurisdiction of flaring within a state were made. 
+
+FACT: According to satellite data, 81% of the flaring in Utah happens on tribal land, 17% on state land and 2% on federal land.
+
+FACT: Satellite data analyzed by the Howard Center revealed that oil and gas operators on federal lands in New Mexico flared more than 138 billion cubic feet of gas, nearly half of the gas burned off in the state between 2012 and 2020.
+
+
+```{r}
+flares_final %>%
+  filter(admin != 'offshore') %>% # we don't need to look at offshore drilling for this, since it's unassociated with any state
+  group_by(state_name, admin) %>%
+  summarise(mcf = sum(mcf, na.rm = TRUE),
+            .groups = 'drop') %>%
+  pivot_wider(names_from = admin, values_from = mcf) %>%
+  mutate(across (c(state:federal), replace_na, 0),
+         mcf_total = state + tribal + federal,
+         pct_state = (state/(state + tribal + federal)),
+         pct_tribal = (tribal/(state + tribal + federal)),
+         pct_federal = (federal/(state + tribal +federal))) %>%
+  select(-state, -tribal, -federal) %>%
+  arrange(desc(mcf_total))%>%
+  gt( rowname_col = "state" ) %>%
+  fmt_number(column = mcf_total,
+             decimals = 0) %>%
+  fmt_percent(columns = pct_state:pct_federal, 
+              decimals=0, 
+              use_seps=TRUE) %>%
+  cols_label(state_name = "State",
+             mcf_total = "Total",
+             pct_state = "% State",
+             pct_tribal = "% Tribal", 
+             pct_federal = "% Federal") %>%
+  tab_header(title = "Satellite Recorded Flaring by Admin",
+             subtitle = "Flaring volumes in Mcf (thousand cubic feet) recorded by VIIRS satellite from 2012 - 2020")
+  
+
+```
+
+
+
+
+
+
+
+
+
+
+

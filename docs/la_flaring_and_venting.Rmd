@@ -45,14 +45,14 @@ Note: The reported volumes contain negative values, described by the Louisiana D
 
 We pulled the disposition data from the SONRIS portal and saved it to the project directory, current as of August 4, 2021. This data may be amended by companies and is not subject to auditing by the Louisiana Department of Natural Resources, so disposition data downloaded after this date may produce differing results.
 
-The data was cleaned and duplicates -- as defined by the criteria confirmed by the state -- were removed.
+# Load Data
 
+The data was cleaned and duplicates -- as defined by the criteria confirmed by the state -- were removed. This cleaned dataset is available from the Howard Center, [here](https://drive.google.com/file/d/1-T7f3sPhEM5a_RHpvKkDp6S2UFNW5Xhv/view?usp=sharing) (For more information about our data cleaning, please contact: $EMAIL) 
 
 ```{r load_and_clean_data, echo=TRUE}
 
-
-la_flaring_and_venting <- read.csv("la_final.csv")
-
+id <- "1-T7f3sPhEM5a_RHpvKkDp6S2UFNW5Xhv" # google file ID
+la <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download", id))
 
 ```
 
@@ -68,7 +68,7 @@ These numbers were calculated by aggregating the totals reported. We extracted t
 
 ```{r}
 
-la_flaring_and_venting %>%
+la %>%
   mutate (year = as.numeric(str_sub(report_date, -4, -1))) %>%
   filter(year >= 2012 & year <= 2020) %>%
   group_by(year) %>%

@@ -45,11 +45,12 @@ Data from the monthly reports (1995- present) is available at the AOGCC’s data
 
 #Load Data
 
-Data from the AOGCC site is available in Microsoft Access (.mdb) format. We extracted the relevant data table containing flaring and venting volumes from the file using [MDB Tools](https://github.com/mdbtools/mdbtools) and saved it as a .csv to this directory. The data is current as of Sept. 15, 2021. Companies can amend reports, so disposition data downloaded after then may produce different results than those below. 
+Data from the AOGCC site is available in Microsoft Access (.mdb) format. We extracted the relevant data table containing flaring and venting volumes from the file using [MDB Tools](https://github.com/mdbtools/mdbtools) and saved it as a .csv to the Howard Center, [here](https://drive.google.com/file/d/16hObOwOFms8pH203Asslq_ybUtXpeM7k/view?usp=sharing). The data is current as of Sept. 15, 2021. Companies can amend reports, so disposition data downloaded after then may produce different results than those below. 
 
 ```{r load data, include=TRUE}
 
-ak <- read.csv("ak_flaring_and_venting.csv") %>%
+id <- "16hObOwOFms8pH203Asslq_ybUtXpeM7k" # google file ID
+ak <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download", id)) %>%
   clean_names() %>%
   # convert `rpt_date` to datetime & extract year
   mutate(rpt_date = as.Date(rpt_date, format = "%m/%d/%y"),

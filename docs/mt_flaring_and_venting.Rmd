@@ -48,13 +48,14 @@ Data from the monthly reports (2001-present) is available at the MBOGC’s [webs
 
 We saved the disposition data from MBOGC, current as of Nov. 18, 2021, to the project directory. Companies can amend reports, so disposition data downloaded after Nov. 18, 2021 may produce slightly different results than those below.
 
-We cleaned the data and ensured there were no duplicates then saved it as a csv file: `mt_flaring_and_venting.csv` 
+We cleaned the data and ensured there were no duplicates, then saved the data to the Howard Center's drive, available [here](https://drive.google.com/file/d/1bc9Fry0o5SXHeWxB_ezWcX8pkhKAlmB_/view?usp=sharing)
 
 
 ```{r load_and_clean_data, echo=TRUE}
 
+id <- "1bc9Fry0o5SXHeWxB_ezWcX8pkhKAlmB_" # google file ID
+mont <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download", id))
 
-mont <- read.csv("mt_flaring_and_venting.csv")
 
 ```
 

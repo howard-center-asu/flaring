@@ -35,13 +35,14 @@ An annual compilation of production reports can be found on the commissions [dow
 
 # Load data
 
-Annual data for Colorado needed to be downloaded year-to-year, compiled, then cleaned. For a copy of this data cleaning, contact Jimmy Cloutier at [jclouti3@asu.edu](mailto:jclouti3@asu.edu). The compiled data was saved as an .csv to the project directory. 
+Annual data for Colorado needed to be downloaded year-to-year, compiled, then cleaned. For a copy of this data cleaning, contact Jimmy Cloutier at [jclouti3@asu.edu](mailto:jclouti3@asu.edu). The compiled data was saved as an .csv to the Howard Center drive, [here](https://drive.google.com/file/d/1Kh13rdkcBjCkQHEM3V2NFjeVMkqQ-Qxc/view?usp=sharing). 
 
 We uploaded this file into R. Each row represents a company's monthly report for flaring and venting from a particular well drilling from a particular formation. 
 
 ```{r load data}
 
-co <- read.csv("co_flaring_and_venting.csv")
+id <- "1Kh13rdkcBjCkQHEM3V2NFjeVMkqQ-Qxc" # google file ID
+co <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download", id))
 
 ```
 

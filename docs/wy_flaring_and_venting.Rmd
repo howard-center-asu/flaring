@@ -43,14 +43,15 @@ Data from the monthly reports (2014-present) are available at the WOGCC’s data
 
 # Load data
 
-Annual data for Wyoming needed to be downloaded year-to-year, compiled, then cleaned. To see how we did this, contact Jimmy Cloutier at [jclouti3@asu.edu](mailto:jclouti3@asu.edu). The compiled data was saved as an .csv to the project directory.  [THERE WERE SEVERAL BAD ROWS WHICH WE REMOVED, RESULTING IN WHAT APPEARS TO BE 28 MCF MISSING FROM TOTAL VOLUME. SHOULD WE EXPLAIN THIS HERE?]
+Annual data for Wyoming needed to be downloaded year-to-year, compiled, then cleaned. To see how we did this, contact Jimmy Cloutier at [jclouti3@asu.edu](mailto:jclouti3@asu.edu). The compiled data was saved as an .csv to the Howard Center drive, [here](https://drive.google.com/file/d/11wk_X_krbNwBmsWN0OSP-U7XikQcrB3T/view?usp=sharing)
 
 We uploaded this file into R. Each row represents a company's annual record for flaring and venting from a particular well drilling from a particular formation. 
 
 
 ```{r}
 
-wy <- read.csv("wy_flaring_and_venting.csv")
+id <- "11wk_X_krbNwBmsWN0OSP-U7XikQcrB3T" # google file ID
+wy <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download", id))
 
 ```
 

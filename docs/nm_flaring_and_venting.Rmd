@@ -201,16 +201,16 @@ county_wells_table %>%
 
 ```
 
-FACT: 2,800 wells were completed during Gov. Grisham's administration. 
+FACT: Nearly 2,800 wells were completed during Gov. Grisham's administration. 
 
-To calculate the number of completions during the governor's administration, we filtered `compl_date` variable, identifying the date of the completion, for the years 2019 to 2021. 
+To calculate the number of completions during the governor's administration, we filtered `compl_date` variable, identifying the date of the completion, for the years 2019 to 2021. To ensure we count unique well completions, we use `n_distincit` to count records that were distinct by well number, `api`, and the `compl_date`. 
 
 ```{r}
 
 nm_completions %>%
-  mutate(year = year(as.Date(compl_date, "%m/%d/%y"))) %>%
+  mutate(year = year(compl_date)) %>%
   filter(year >= 2019) %>%
-  summarise(n = n())
+  summarise(n = n_distinct(api, compl_date))
 
 ```
 

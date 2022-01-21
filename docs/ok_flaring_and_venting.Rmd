@@ -35,7 +35,7 @@ Oil and gas companies in Oklahoma are not required to report volumes of gas flar
 
 To request approval operators fill out Form 1022, the Application to Flare or Vent Gas. At the bottom of the form, there are fields for the OCC to record the approved volume per day and the number of days.
 
-The Howard Center built a database to total approved flaring and venting volumes in Oklahoma between 2012 and 2020 by extracting data from more than 800 requests submitted to the OCC. 
+The Howard Center built a database to total approved flaring and venting volumes in Oklahoma between 2012 and 2020 by extracting data from more than 800 requests submitted to the OCC. In creating the database, the Howard Center encountered duplicate flaring data due to the same application being submitted multiple times, as well as situations where there were applications for single wells that also existed on applications for leases covering multiple wells. These duplicates were filtered out of the final data set.
 
 We downloaded the Form 1022s from the commission’s imaging [website](https://imaging.occ.ok.gov/imaging/OGWellRecords.aspx) and then opened each scanned copy to manually enter the estimated and approved flaring and venting volumes. Applications were either for a single well or a lease containing multiple wells.
 

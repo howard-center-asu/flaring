@@ -53,7 +53,7 @@ That information was saved as .csv, which we'll load now.
 ```{r}
 
 id <- "17-FBaY79bGB_ITt-73K4kIUnMHhN-pDS" # google file ID
-flares_flaring <- read.csv(sprintf("https://drive.google.com/file/d/17-FBaY79bGB_ITt-73K4kIUnMHhN-pDS/view?usp=sharing", id))
+flaring <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download", id))
 
 
 ```
@@ -65,7 +65,7 @@ Totals annual flaring volume for each state was calculated this way. This suppor
 
 ```{r}
 
-flares_final %>%
+flaring %>%
   filter(state_name == "Texas" | 
          state_name == "North Dakota" | 
          state_name == "New Mexico" | 
@@ -92,8 +92,6 @@ flares_final %>%
   tab_stubhead(label = "State") %>%
   tab_header(title = "Satellite Recorded Flaring",
              subtitle = "Flaring volumes in Mcf (thousand cubic feet) recorded by VIIRS satellite from 2012 - 2020") %>%
-  tab_footnote(footnote = "Flares unassociated with a state are from offshore platforms",
-               locations = cells_stub(rows = 4)) %>%
   fmt_number(column = '2012':'Total',
              decimals = 0) %>%
   grand_summary_rows(fns = list('Total' = "sum"), 
@@ -112,27 +110,26 @@ FACT: Satellite data analyzed by the Howard Center revealed that oil and gas ope
 
 
 ```{r}
-flares_final %>%
+flaring %>%
   filter(admin != 'offshore') %>% # we don't need to look at offshore drilling for this, since it's unassociated with any state
   group_by(state_name, admin) %>%
   summarise(mcf = sum(mcf, na.rm = TRUE),
             .groups = 'drop') %>%
   pivot_wider(names_from = admin, values_from = mcf) %>%
-  mutate(across (c(state:federal), replace_na, 0),
-         mcf_total = state + tribal + federal,
-         pct_state = (state/(state + tribal + federal)),
-         pct_tribal = (tribal/(state + tribal + federal)),
-         pct_federal = (federal/(state + tribal +federal))) %>%
+  mutate(total=rowSums(across(tribal:state),na.rm = TRUE),
+         pct_state = (state/(total)),
+         pct_tribal = (tribal/(total)),
+         pct_federal = (federal/(total))) %>%
   select(-state, -tribal, -federal) %>%
-  arrange(desc(mcf_total))%>%
+  arrange(desc(total)) %>%
   gt( rowname_col = "state" ) %>%
-  fmt_number(column = mcf_total,
+  fmt_number(column = total,
              decimals = 0) %>%
   fmt_percent(columns = pct_state:pct_federal, 
               decimals=0, 
               use_seps=TRUE) %>%
   cols_label(state_name = "State",
-             mcf_total = "Total",
+             total = "Total",
              pct_state = "% State",
              pct_tribal = "% Tribal", 
              pct_federal = "% Federal") %>%

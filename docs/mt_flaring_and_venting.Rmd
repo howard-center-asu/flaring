@@ -93,9 +93,32 @@ mont_annualtotals %>%
 
 ```
 
+FACT: Since 2015, lease 1825, containing two Denbury wells with permenant exceptions to release gas, has flared or vented about 1 billion cubic feet of gas, more than any other lease, a Howard Center analysis of satellite data showed.
 
+```{r  leases totals, echo=TRUE }
 
+mont_leasetotals <- mont %>%
+  mutate(year = year(rpt_date)) %>%
+  filter(year >= 2015) %>% 
+  group_by(lease_unit) %>%
+  summarise(total = sum(flar_vnt_gas, na.rm = TRUE)) %>%
+  arrange(desc(total)) %>%
+  head(10)
+  
+# Pretty table
+mont_leasetotals %>%
+  gt(rowname_col = "lease_unit") %>%
+  tab_stubhead(label = "Lease") %>%
+  tab_header(title = "Flaring and Venting Volumes Reported to MBOGC",
+             subtitle = "Flaring and venting volumes in Mcf (thousand cubic feet)") %>%
+  fmt_number(column = "total",
+             decimals = 0) %>%
+  grand_summary_rows(fns = list("total" = "sum"), 
+                           columns=("total"), 
+                           formatter=gt::fmt_number, 
+                           decimals=0)
 
+```
 
 
 

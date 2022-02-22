@@ -1,6 +1,6 @@
 ---
 title: "Utah flaring and venting totals"
-author: "Zoha Tunio and Sarah Hunt"
+author: "Zoha Tunio, Sarah Hunt"
 output: 
   html_document:
       code_folding: show
@@ -29,10 +29,10 @@ knitr::opts_chunk$set(echo = TRUE)
 
 The Utah Division of Oil, Gas and Mining requires oil and gas operators on producing, shut-in and temporarily abandoned wells to fill a form titled `Form 11` (https://oilgas.ogm.utah.gov/pub/report_forms/frm_11_2005.pdf) with information on flared and vented gas. 
 
-Data from the monthly reports (2012-present) are available at the division's website under its Data Research Center tab [here] (https://oilgas.ogm.utah.gov/oilgasweb/data-center/dc-main.xhtml). Click `Disposition Data (2009-2014; can open in Excel),` `Disposition Data (2015-2019; can open in Excel),` and `Disposition Data (2020-2024; can open in Excel)` to download the data sets for our selected time frame. This will download the data in .csv format. 
+Data from the monthly reports (2012-present) are available at the division's website under its Data Research Center tab [here](https://oilgas.ogm.utah.gov/oilgasweb/data-center/dc-main.xhtml). To download the data for our selected tiem frame, click `Disposition Data (2009-2014; can open in Excel),` `Disposition Data (2015-2019; can open in Excel),` and `Disposition Data (2020-2024; can open in Excel)`. 
 
 
-#Load Data
+# Load Data
 
 We compiled and cleaned the data from the state regulatory agency and saved it as a new dataset available from the Howard Center [here](https://drive.google.com/file/d/1R3FPAoFZDiJzdnMJpljVHrmak-TZu4dA/view?usp=sharing). (For more information about our data cleaning, please contact: howardcenter@asu.edu) 
 

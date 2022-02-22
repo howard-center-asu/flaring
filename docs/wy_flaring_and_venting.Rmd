@@ -41,7 +41,7 @@ Data from the monthly reports (2014-present) are available at the WOGCC’s data
 
 # Load data
 
-We compiled and cleaned the data from the state regulatory agency and saved it as a new dataset available from the Howard Center [here](https://drive.google.com/file/d/11wk_X_krbNwBmsWN0OSP-U7XikQcrB3T/view?usp=sharing). (For more information about our data cleaning, please contact: jclouti3@asu.edu) 
+We compiled and cleaned the data from the state regulatory agency and saved it as a new dataset available from the Howard Center [here](https://drive.google.com/file/d/11wk_X_krbNwBmsWN0OSP-U7XikQcrB3T/view?usp=sharing). (For more information about our data cleaning, please contact: howardcenter@asu.edu) 
 
 We uploaded this file into R. Each row represents a company's annual record for flaring and venting from a particular well drilling from a particular formation. 
 

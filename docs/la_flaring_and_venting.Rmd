@@ -40,7 +40,7 @@ In Louisiana, oil and gas operators are required to submit a form, called form R
 
 Louisiana's data from the monthly reports is available at the DNR’s SONRIS data portal [here](https://sonlite.dnr.state.la.us/pls/apex/f?p=108:2:23507633725345), which allows one year’s worth of data to be downloaded at a time. Click “Production Audit,” and then click the spreadsheet icon for “R5D Data Entry (Gas Disposition).” For the date fields, enter a starting date of “01-Jan” and ending date of “01-Dec” for a given year. For the “Group Code” field, click to highlight all codes for the complete data set, and then click to execute the search. To download the data, click the “Actions” dropdown menu near the top left of the displayed results table, click “Download,” and select the .csv format option. The column named “Group Code” can be filtered for “63” for volumes of vented gas and “64” for volumes of flared gas. 
 
-Note that Executing searches for the date fields “01-Jan” through “01-Dec” will produce data for the entire given year because reports are dated for the first of the month. The data portal does not allow searches through “31-Dec” because the system registers the search as exceeding its one-year limit. DNR has confirmed that the “Report Date” column refers to the month the data was captured. An entry dated “01-Jan-20” contains data on oil and gas production that occurred in January of 2020. 
+Note that executing searches for the date fields “01-Jan” through “01-Dec” will produce data for the entire given year because reports are dated for the first of the month. The data portal does not allow searches through “31-Dec” because the system registers the search as exceeding its one-year limit. DNR has confirmed that the “Report Date” column refers to the month the data was captured. An entry dated “01-Jan-20” contains data on oil and gas production that occurred in January of 2020. 
 
 The reported volumes contain negative values, described by the Louisiana Department of Natural Resources as indicating that the gas flared or vented was obtained from federal land but flared or vented on state land. Therefore, converting these numbers to positive integers is the only way to obtain the full total. According to DNR, this only includes "upstream" data. However, because this is gas obtained on federal lands and then flared on state lands, it seems like it would be what can often be considered "midstream." Given that the satellite data includes "midstream" flaring in its "upstream" data set, this shouldn't be a problem.
 
@@ -48,13 +48,11 @@ We pulled the disposition data from the SONRIS portal and saved it to the projec
 
 # Load Data
 
-
-We compiled and cleaned the data from the state regulatory agency and saved it as a new dataset available from the Howard Center [here](https://drive.google.com/file/d/1-T7f3sPhEM5a_RHpvKkDp6S2UFNW5Xhv/view?usp=sharing). (For more information about our data cleaning, please contact: jclouti3@asu.edu) 
+We compiled and cleaned all this data from the state regulatory agency and saved it to new data sets available from the Howard Center [here](https://cronkitedata.s3.amazonaws.com/howard/gaslit/la_flaring_and_venting.csv). (For more information about our data cleaning, please contact: howardcenter@asu.edu).  
 
 ```{r load_and_clean_data, echo=TRUE}
 
-id <- "1-T7f3sPhEM5a_RHpvKkDp6S2UFNW5Xhv" # google file ID
-la <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download", id))
+la <- read.csv (url("https://cronkitedata.s3.amazonaws.com/howard/gaslit/la_flaring_and_venting.csv"))
 
 ```
 
@@ -74,7 +72,6 @@ la_annualtotals <- la %>%
   group_by(year) %>%
   summarise(Total = sum(abs, na.rm = TRUE))
 
-# Pretty table
 la_annualtotals %>%
   gt(rowname_col = "year") %>%
   tab_stubhead(label = "Year") %>%

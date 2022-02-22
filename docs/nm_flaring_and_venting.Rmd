@@ -53,8 +53,6 @@ The fourth, and final, data set is of well completions. The Oil Conservation Div
 
 We compiled and cleaned all this data from the state regulatory agency and saved it to new data sets available from the Howard Center [here](https://drive.google.com/drive/folders/1MR7DvWKFKBjd3MO7UKkfIRhWEppxDpXY?usp=sharing). (For more information about our data cleaning, please contact: howardcenter@asu.edu). 
 
-The data is current as of Dec. 11, 2021.
-
 ```{r}
 
 # Disposition data

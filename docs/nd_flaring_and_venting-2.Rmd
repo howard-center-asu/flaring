@@ -55,12 +55,11 @@ load(url("https://cronkitedata.s3.amazonaws.com/howard/gaslit/nd_flaring_and_ven
 
 # Analysis
 
-
 There are three claims made in the North Dakota summary that are supported by the findings from analyzing the state reported data.
 
 FACT: Oil and gas operated flared 991,443,446,000 cubic feet of gas. 
 
-FACT: North Dakota produced more than 438 million barrels of oil in 2020, while reportedly flaring more than 991 billion cubic feet of gas, according to state records.
+FACT: North Dakota produces more than 438 million barrels of oil in 2020, while reportedly flaring more than 991 billion cubic feet of gas, according to state records.
 
 FACT: From 2012 to 2020, producers in North Dakota reported just under one trillion cubic feet of gas flared, according to a Howard Center analysis. 
 

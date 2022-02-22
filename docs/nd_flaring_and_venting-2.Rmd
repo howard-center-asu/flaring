@@ -37,7 +37,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Introduction
 
-Oil and gas companies are required to report monthly on how much gas they’ve flared tothe  North Dakota Department of Mineral Resources (DMR). They use Form 5B, the Gas Production Report, which includes fields for the volumes of gas produced, used on the lease, flared, and transferred. The venting of gas is prohibited in North Dakota.
+Oil and gas companies are required to report monthly on how much gas they’ve flared to the North Dakota Department of Mineral Resources (DMR). They use Form 5B, the Gas Production Report, which includes fields for the volumes of gas produced, used on the lease, flared, and transferred. The venting of gas is prohibited in North Dakota.
 
 Data from the monthly reports (2003-present) is available at the DMR’s [website](https://www.dmr.nd.gov/oilgas/mprindex.asp), which has a separate data set for each month of each year. New data is made available about a month and a half after that month has ended. Select a year in the dropdown menu, and then click on the linked “Excel” text to download the file for a given month in .xlsx format. The column with volumes of flared gas is named “Flared.” 
 

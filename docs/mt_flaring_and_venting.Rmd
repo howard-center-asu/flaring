@@ -37,8 +37,6 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Introduction 
 
-This notebook contains the analysis of Montana's flaring and venting data for the Howard Center Investigation, "....". As part of the investigation, we collected flaring and venting volumes reported by oil and gas companies to state regulators. We then compared annual totals for each state to what was recorded by a U.S. satellite equipped with a Visible Infrared Imaging Radiometer Suite (VIIRS) instrument. (To learn more about the satellite and our analysis of the data it collected, see [this](....) notebook). 
-
 In Montana, oil and gas companies are required to submit monthly reports detailing the volume of gas flared or vented at each lease. They use Form 6, the Report of Production, which includes fields for the volumes of gas produced, sold, flared or vented, used on the lease, and handled via other disposition options. A copy of Form 6 and its instructions is available from the Montana Board of Oil and Gas Conservation, [here](http://dnrc.mt.gov/divisions/board-of-oil-and-gas-conservation/docs/bogc-forms/form-06). There is one line, 25, for the producers to include flaring and venting: “Type or write the total MCFs for the lease of gas (@14.73 PSIA) produced, sold, flared or vented, used on lease, injected, and other.” Reported gas flared or vented is measured in thousand cubic feet (Mcf) at 14.73 PSIA at 60° Fahrenheit, unless permitted otherwise by board.
 
 Data from the monthly reports (2001-present) is available at the MBOGC’s [website](http://www.bogc.dnrc.mt.gov/PRODUCTION/) in a data set called “historical.zip.” The date of its last update is to the left of the linked text. Click the linked text to download the zipped file, and open it to find three data tables in .tab format. The “histLeaseProd.tab” table has disposition data, and the column with volumes of flared or vented gas is named “FlarVnt_Gas.”    
@@ -75,25 +73,25 @@ mont_annualtotals <- mont %>%
   mutate(year = year(rpt_date)) %>%
   filter(year >= 2012 & year <= 2020) %>% #We're looking at this time range because this matches the period of time we're looking at for the satellite data that we'll be comparing this to.
   group_by(year) %>%
-  summarise(total = sum(flar_vnt_gas, na.rm = TRUE))
+  summarise(Total = sum(flar_vnt_gas, na.rm = TRUE))
   
 # Pretty table
 mont_annualtotals %>%
   gt(rowname_col = "year") %>%
-  tab_stubhead(label = "year") %>%
+  tab_stubhead(label = "Year") %>%
   tab_header(title = "Flaring and Venting Volumes Reported to MBOGC",
              subtitle = "Flaring and venting volumes in Mcf (thousand cubic feet)") %>%
-  fmt_number(column = "total",
+  fmt_number(column = "Total",
              decimals = 0) %>%
-  grand_summary_rows(fns = list("total" = "sum"), 
-                           columns=("total"), 
+  grand_summary_rows(fns = list("Total" = "sum"), 
+                           columns=("Total"), 
                            formatter=gt::fmt_number, 
                            decimals=0)
 
 
 ```
 
-FACT: Since 2015, lease 1825, containing two Denbury wells with permenant exceptions to release gas, has flared or vented about 1 billion cubic feet of gas, more than any other lease, a Howard Center analysis of satellite data showed.
+FACT: Since 2015, lease 1825, containing two Denbury wells with permanent exceptions to release gas, has flared or vented about 1 billion cubic feet of gas, more than any other lease, a Howard Center analysis of satellite data showed.
 
 ```{r  leases totals, echo=TRUE }
 
@@ -101,8 +99,8 @@ mont_leasetotals <- mont %>%
   mutate(year = year(rpt_date)) %>%
   filter(year >= 2015) %>% 
   group_by(lease_unit) %>%
-  summarise(total = sum(flar_vnt_gas, na.rm = TRUE)) %>%
-  arrange(desc(total)) %>%
+  summarise(Total = sum(flar_vnt_gas, na.rm = TRUE)) %>%
+  arrange(desc(Total)) %>%
   head(10)
   
 # Pretty table
@@ -111,10 +109,10 @@ mont_leasetotals %>%
   tab_stubhead(label = "Lease") %>%
   tab_header(title = "Flaring and Venting Volumes Reported to MBOGC",
              subtitle = "Flaring and venting volumes in Mcf (thousand cubic feet)") %>%
-  fmt_number(column = "total",
+  fmt_number(column = "Total",
              decimals = 0) %>%
-  grand_summary_rows(fns = list("total" = "sum"), 
-                           columns=("total"), 
+  grand_summary_rows(fns = list("Total" = "sum"), 
+                           columns=("Total"), 
                            formatter=gt::fmt_number, 
                            decimals=0)
 

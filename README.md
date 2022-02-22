@@ -1,6 +1,6 @@
 # Gaslit
 
-This repository contains the Howard Center's data analysis for [Gaslit](https://cronkitenews.azpbs.org/howardcenter/gaslit), its 2022 investigation of flaring and venting by oil and gas industry in the United States.
+This repository contains the Howard Center's data analysis for [Gaslit](https://cronkitenews.azpbs.org/howardcenter/gaslit), a 2022 investigation of flaring and venting by the oil and gas industry in the United States.
 
 Oil and gas operators release large volumes of methane and carbon dioxide, two of the most potent greenhouse gases, by burning natural gas or releasing it directly into the atmosphere. They are required to report those volumes to state agencies tasked with regulating waste by the oil and gas industry. 
 

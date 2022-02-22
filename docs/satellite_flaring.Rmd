@@ -98,8 +98,6 @@ flaring %>%
 ```
 
 
-A couple comparisons between jurisdiction of flaring within a state were made. 
-
 FACT: According to satellite data, 81% of the flaring in Utah happens on tribal land, 17% on state land and 2% on federal land.
 
 FACT: Satellite data analyzed by the Howard Center revealed that oil and gas operators on federal lands in New Mexico flared more than 138 billion cubic feet of gas, nearly half of the gas burned off in the state between 2012 and 2020.

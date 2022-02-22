@@ -29,7 +29,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```
 
-This notebook contains the analysis of Oklahoma's flaring and venting data for the Howard Center Investigation, “Gaslit”. As part of the investigation, we collected flaring and venting volumes reported by oil and gas companies to state regulators. We then compared annual totals for each state to what was recorded by a U.S. satellite equipped with a Visible Infrared Imaging Radiometer Suite (VIIRS) instrument. (To learn more about the satellites and our analysis of the data they collected, see this notebook.) 
+
 
 Oil and gas companies in Oklahoma are not required to report volumes of gas flared or vented. However, they are required to request approval from the Oklahoma Corporation Commission (OCC) to flare or vent in excess of 50,000 cubic feet per day.  
 
@@ -71,15 +71,15 @@ ok %>%
   mutate(effective_date = as.Date(effective_date, format = "%m/%d/%Y"),
          year = year(effective_date)) %>%
   group_by(year) %>%
-  summarise(volume = sum(as.numeric(total_volume_approved), na.rm = TRUE)) %>%
+  summarise(Total = sum(as.numeric(total_volume_approved), na.rm = TRUE)) %>%
   gt(rowname_col = "year") %>%
-  tab_stubhead(label = "year") %>%
+  tab_stubhead(label = "Year") %>%
   tab_header(title = "Flaring and Venting Volumes Approved by OCC",
              subtitle = "Flaring and venting volumes in Mcf (thousand cubic feet)") %>%
-  fmt_number(column = "volume",
+  fmt_number(column = "Total",
              decimals = 2) %>%
-  grand_summary_rows(fns = list("total" = "sum"), 
-                           columns=("volume"), 
+  grand_summary_rows(fns = list("Total" = "sum"), 
+                           columns=("Total"), 
                            formatter=gt::fmt_number, 
                            decimals=2)
 

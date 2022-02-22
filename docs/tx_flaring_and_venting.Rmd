@@ -25,14 +25,17 @@ library(reactable) # for searchable sortable filterable tables
 
 con <- dbConnect(SQLite(), "texas_flare_rawdata.db", extended_types=TRUE)
 
-
-
 ```
 
-## Texas Railroad Commission flaring and venting data
+# Introduction
 
+Oil and gas companies in Texas  are required to report monthly on how much gas they’ve flared or vented. They use Form PR, the Monthly Production Report, which includes fields for the volumes of gas produced, vented or flared, used on the lease, delivered to processing plants, and handled via other disposition options. Companies report disposition using codes, with code 4 referring to “vented or flared” gas. They also indicate why gas was vented or flared in Form PR’s “REMARKS” section.
 
-I created a SQLite database called `texas_flaring_rawdata.db` to hold the production and disposition data from the Texas Railroad Commission because the files were too large to fit into R. 
+Data from the monthly reports (1993-present) is available at the RRC’s website in a file called the “Production Data Query Dump,” which is updated monthly and available by the 27th. 
+
+# Load 
+
+We created an SQLite database called `texas_flaring_rawdata.db` to hold the production and disposition data from the Texas Railroad Commission because the files were too large to fit into R. 
 
 The tables are: 
 

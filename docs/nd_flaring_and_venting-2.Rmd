@@ -2,13 +2,12 @@
 title: "North Dakota Flaring & Venting"
 author: "Isaac Stone Simonelli"
 output: 
-   html_document:
-     code_download: true
-     code_folding: show
-     toc: true
-     toc_float: true
-     df_print: paged
-     theme: united
+  html_document:
+      code_folding: show
+      df_print: paged
+      toc: true
+      toc_float: true
+      code_download: true
 ---
 
 ```{r setup, message=FALSE, class.source="fold-hide"}

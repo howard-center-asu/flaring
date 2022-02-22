@@ -29,10 +29,7 @@ options(digits = 10, scipen = 99)
 
 # Special libraries
 library(tidyverse)
-library(sf)
 library(readxl)
-library(leaflet)  # if you want to make a clickable map
-library(leaflet.extras) # just has a few things to make things easier.
 library(gt) # for pretty tables
 
 # For plots
@@ -81,21 +78,22 @@ flaring %>%
          state_name == "Louisiana" | 
          is.na(state_name)) %>%
   group_by(year, state_name) %>%
-  summarise(mcf = sum(mcf, na.rm = TRUE),
+  summarise(cf = sum(cf, na.rm = TRUE),
             .groups = 'drop') %>%
-  pivot_wider(names_from = year, values_from = mcf) %>%
-  mutate('Total' = rowSums(across(c('2012':'2020'))),
-         "Total (%)" = (Total/sum(Total))*100) %>% # To calculate total for years 2012-2020
+  pivot_wider(names_from = year, values_from = cf) %>%
+  mutate(`2020` = replace_na(`2020`,0), 
+         "Total" = rowSums(across(c(`2012`:`2020`))),
+         "Total (%)" = (Total/sum(Total))*100) %>%
   arrange(desc(Total)) %>%
   # following code makes a pretty table
   gt( rowname_col = "state_name") %>% 
   tab_stubhead(label = "State") %>%
   tab_header(title = "Satellite Recorded Flaring",
-             subtitle = "Flaring volumes in Mcf (thousand cubic feet) recorded by VIIRS satellite from 2012 - 2020") %>%
-  fmt_number(column = '2012':'Total',
+             subtitle = "Flaring volumes in cubic feet recorded by VIIRS satellite from 2012 - 2020") %>%
+  fmt_number(column = '2012':'Total (%)',
              decimals = 0) %>%
   grand_summary_rows(fns = list('Total' = "sum"), 
-                           columns=('2012':'Total'), 
+                           columns=('2012':'Total (%)'), 
                            formatter=gt::fmt_number, 
                            decimals=0)
 

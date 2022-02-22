@@ -41,9 +41,9 @@ In Alaska, oil and gas companies are required to submit monthly reports detailin
 
 Data from the monthly reports (1995- present) is available at the AOGCC’s data [website](https://www.commerce.alaska.gov/web/aogcc/Data.aspx) in a data set called “Data Extract,” which is updated monthly. 
 
-#Load Data
+# Load Data
 
-Data from the AOGCC site is available in Microsoft Access (.mdb) format. We extracted the relevant data table containing flaring and venting volumes from the file using [MDB Tools](https://github.com/mdbtools/mdbtools) and saved it as a .csv to the Howard Center, [here](https://drive.google.com/file/d/16hObOwOFms8pH203Asslq_ybUtXpeM7k/view?usp=sharing). The data is current as of Sept. 15, 2021. Companies can amend reports, so disposition data downloaded after then may produce different results than those below. 
+Data from the AOGCC site is available in Microsoft Access (.mdb) format. We extracted the relevant data table containing flaring and venting volumes from the file using [MDB Tools](https://github.com/mdbtools/mdbtools) and saved it as a .csv to the Howard Center, [here](https://drive.google.com/file/d/16hObOwOFms8pH203Asslq_ybUtXpeM7k/view?usp=sharing). The data is current as of Sept. 15, 2021. Companies can amend reports, so disposition data downloaded after then may produce different results than those below. (For more information about our data cleaning, please contact: howardcenter@asu.edu). 
 
 ```{r load data, include=TRUE}
 
@@ -59,9 +59,9 @@ ak <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download", id)) 
 
 ```
 
-# Total flared/vented volumes 
+# Analysis
 
-Claim: "Between 2012 and 2020, oil and gas operators in Alaska reported flaring and venting more than 27 billion cubic feet of gas."
+FACT: "Between 2012 and 2020, oil and gas operators in Alaska reported flaring and venting more than 27 billion cubic feet of gas."
 
 These numbers were calculated by aggregating the totals reported. We created a new `Total` column to add up the volumes from two separate columns, one for flaring and venting events that lasted less than on hour, and one for flaring and venting events that lasted for one hour or longer. We also extracted the year from the report date and created a new `yr` column, then filtered for the years 2012 to 2020, the time frame we were looking at for this investigation. Finally, we grouped by year to calculate the annual totals.
 

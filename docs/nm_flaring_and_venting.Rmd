@@ -1,6 +1,6 @@
 ---
 title: "New Mexico Flaring & Venting"
-author: "Nicole Sadek, Izzy Koyama, Aydali Campa"
+author: "Nicole Sadek, Jimmy Cloutier, Izzy Koyama, Aydali Campa"
 output:
     html_document:
       code_folding: show
@@ -37,23 +37,21 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 
-This notebook contains the analysis of New Mexico's flaring data for the Howard Center Investigation, "....". As part of the investigation, we collected flaring and venting volumes reported by oil and gas companies to state regulators. We then compared annual totals for each state to what was recorded by a U.S. satellite equipped with a Visible Infrared Imaging Radiometer Suite (VIIRS) instrument. (To learn more about the satellite and our analysis of the data it collected, see [this](....) notebook). 
+This notebook contains the analysis of New Mexico's oil and gas well completion, flaring, venting  data for the Howard Center Investigation, "Gaslit". The analysis  relies on four data sets publicly available from the New Mexico Oil Conservation Division (OCD). 
 
-Our analysis relies on four data sets. 
-
-The first is flaring and venting data collected by the New Mexico Oil Conservation Division (OCD). Oil and gas companies in New Mexico are required to report the volume of gas they flare, vent, lose, and use on lease in addition to the volume of oil and gas they produce at each well on a monthly basis, using the electronic C-115 form. Details regarding the form are available with the OCD [here](https://www.emnrd.nm.gov/ocd/wp-content/uploads/sites/6/C115_Instructions2019.pdf). Reported gas flared or vented is measured in thousand cubic feet (Mcf).
+The first is flaring and venting data reported by companies to OCD. Oil and gas companies in New Mexico are required to report the volume of gas they flare, vent, lose, and use on lease in addition to the volume of oil and gas they produce at each well on a monthly basis, using the electronic C-115 form. Details regarding the form are available with the OCD [here](https://www.emnrd.nm.gov/ocd/wp-content/uploads/sites/6/C115_Instructions2019.pdf). Reported gas flared or vented is measured in thousand cubic feet (Mcf).
 
 Data from the monthly reports (2014-present) is available at the OCD's [website](https://www.emnrd.nm.gov/ocd/ocd-data/statistics/) in various forms. This analysis uses the data set called "[C-115 Flaring and Venting Data from 2014. By Operator and Year](https://www.emnrd.nm.gov/wp-content/uploads/Copy-of-C-115-Non-Transported-Product-Disposition-By-Operator-VF-Gas-2021-0609.xlsx)."
 
-The second data set we use in our analysis is well history. On the OCD statistics [site](https://www.emnrd.nm.gov/ocd/ocd-data/statistics/), there's a [link](https://wwwapps.emnrd.state.nm.us/ocd/ocdpermitting/Data/Wells.aspx) next to "Well Search by API (history, completions, casing, formation tops, violations, orders and production.) This will take you to the OCD permitting site's well search page. Scroll to the bottom and Next to "Report Format," select "Expanded." Then click "continue." At bottom of the page is a button to "Export to Excel."
+The second data set we use in our analysis is well history. On the OCD statistics [site](https://www.emnrd.nm.gov/ocd/ocd-data/statistics/), there's a [link](https://wwwapps.emnrd.state.nm.us/ocd/ocdpermitting/Data/Wells.aspx) next to "Well Search by API (history, completions, casing, formation tops, violations, orders and production.)" This will take you to the OCD permitting site's well search page. Scroll to the bottom and Next to "Report Format," select "Expanded." Then click "continue." At bottom of the page is a button to "Export to Excel."
 
 The third data set we used is a simple table of yearly drilling permits by type, also available form the OCD statistics [site](https://www.emnrd.nm.gov/ocd/ocd-data/statistics/), next to "APDs issued by Type per Year."
 
-The final, fourth data set is of well completions. The Oil Conservation Division releases weekly well activity reports on its permitting [website](https://wwwapps.emnrd.nm.gov/ocd/ocdpermitting/Reporting/Activity/WeeklyActivity.aspx). We manual copied data from each well completion report between Jan. 6, 2019 -- when Gov. Grisham entered office -- to Nov. 21, 2021 to a spreadsheet saved [here](https://drive.google.com/file/d/1qsnPcklw8MS_TDbzRS61lISRxIilLJEf/view?usp=sharing). 
+The fourth, and final, data set is of well completions. The Oil Conservation Division releases weekly well activity reports on its permitting [website](https://wwwapps.emnrd.nm.gov/ocd/ocdpermitting/Reporting/Activity/WeeklyActivity.aspx). We manual copied data from each well completion report between Jan. 6, 2019 -- when Gov. Grisham entered office -- through 2021 to a spreadsheet saved [here](https://drive.google.com/file/d/1qsnPcklw8MS_TDbzRS61lISRxIilLJEf/view?usp=sharing). 
 
 # Load Data
 
-We compiled and cleaned all this data from the state regulatory agency and saved it new data sets available from the Howard Center [here](). (For more information about our data cleaning, please contact: $EMAIL). 
+We compiled and cleaned all this data from the state regulatory agency and saved it to new data sets available from the Howard Center [here](https://drive.google.com/drive/folders/1MR7DvWKFKBjd3MO7UKkfIRhWEppxDpXY?usp=sharing). (For more information about our data cleaning, please contact: howardcenter@asu.edu). 
 
 The data is current as of Dec. 11, 2021.
 
@@ -109,7 +107,7 @@ nm_flaring %>%
   grand_summary_rows(fns = list("Total" = "sum"), 
                            columns=("Flared":"Vented"), 
                            formatter=gt::fmt_number, 
-                           decimals=2)
+                           decimals=0)
 
 
 ```
@@ -118,7 +116,7 @@ FACT: In the first three years of Lujan Grisham’s administration, the state is
 
 We first created a new data frame with a new column delineating the serving governor for each year. We also filtered for oil and gas permits. 
 
-We then grouped by governor and filtered for "Grisham (D)" to get a total number of APDs issued under her administration. 
+We then grouped by governor to determine the total number of oil and gas APDs issued while they were in office and the annual average. (Note that former Gov. Bill Richardson served for 8 years, but the APD data only goes back to 2004)
 
 ```{r}
 
@@ -129,21 +127,11 @@ nm_apds_gov <- nm_apds %>%
   filter(well_type == "Oil" | well_type == "Gas")
 
 nm_apds_gov %>%
-  filter(gov == "Grisham (D)") %>%
   group_by(gov) %>%
   summarise(apds = sum(apds),
+            years_in_office = n()/2,
+            avg_apds_per_year = apds/years_in_office,
             .groups = "drop")
-
-```
-
-To determine the number of permits issued annually, on average, for each administration, we first calculated the total number of permits issued by each governor. Then we divided those totals by the number years each governor was in office. 
-
-```{r}
-
-nm_apds_gov %>%
-  group_by(gov) %>%
-  summarise(total_apds = sum(apds),
-            avg_per_year = sum(apds)/n())
 
 ```
 
@@ -203,7 +191,7 @@ county_wells_table %>%
 
 FACT: Nearly 2,800 wells were completed during Gov. Grisham's administration. 
 
-To calculate the number of completions during the governor's administration, we filtered `compl_date` variable, identifying the date of the completion, for the years 2019 to 2021. To ensure we count unique well completions, we use `n_distincit` to count records that were distinct by well number, `api`, and the `compl_date`. 
+To calculate the number of completions during the governor's administration, we filtered the `compl_date` variable, which identifies the date of the completion, for the years 2019 to 2021. To ensure we count unique well completions, we use `n_distinct` to count records that were distinct by well number, `api`, and the `compl_date`. 
 
 ```{r}
 

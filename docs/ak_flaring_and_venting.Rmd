@@ -63,7 +63,7 @@ ak <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download", id)) 
 
 FACT: "Between 2012 and 2020, oil and gas operators in Alaska reported flaring and venting more than 27 billion cubic feet of gas."
 
-These numbers were calculated by aggregating the totals reported. We created a new `Total` column to add up the volumes from two separate columns, one for flaring and venting events that lasted less than on hour, and one for flaring and venting events that lasted for one hour or longer. We also extracted the year from the report date and created a new `yr` column, then filtered for the years 2012 to 2020, the time frame we were looking at for this investigation. Finally, we grouped by year to calculate the annual totals.
+This volume was calculated by aggregating the totals reported by companies. We created a new `Total` column to add up the volumes from two separate columns, one for flaring and venting events that lasted less than on hour, and one for flaring and venting events that lasted for one hour or longer. We also extracted the year from the report date and created a new `yr` column, then filtered for the years 2012 to 2020, the time frame we were looking at for this investigation. Finally, we grouped by year to calculate the annual totals.
 
 ```{r calculate annual totals, echo=TRUE}
 

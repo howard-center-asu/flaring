@@ -1,26 +1,24 @@
 ---
 title: "Utah flaring and venting totals"
 author: "Zoha Tunio and Sarah Hunt"
-output:
-  html_document: default
+output: 
+  html_document:
+      code_folding: show
+      df_print: paged
+      toc: true
+      toc_float: true
+      code_download: true
 ---
 
-```{r setup, message=FALSE, class.source="fold-hide"}
+```{r setup, message = FALSE, class.source="fold-hide"}
 
 # For general data science
 library(tidyverse)
-
-# For reading Excel files
-library(readxl)
-
-# For data cleaning
-library(janitor)
 
 # For working with datetime
 library(lubridate)
 
 # For pretty tables
-library(knitr)
 library(gt)
 
 knitr::opts_chunk$set(echo = TRUE)
@@ -38,13 +36,10 @@ Data from the monthly reports (2012-present) are available at the division's web
 
 We compiled and cleaned the data from the state regulatory agency and saved it as a new dataset available from the Howard Center [here](https://drive.google.com/file/d/1R3FPAoFZDiJzdnMJpljVHrmak-TZu4dA/view?usp=sharing). (For more information about our data cleaning, please contact: howardcenter@asu.edu) 
 
-We created a fresh csv file for the analysis: `ut_flaring_and_venting.csv`
-
-
 ```{r load_and_clean_data, echo=TRUE}
 
 id <- "1R3FPAoFZDiJzdnMJpljVHrmak-TZu4dA" # google file ID
-ut <- read_csv(sprintf("https://docs.google.com/uc?id=%s&export=download", id))
+ut <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download", id))
 
 ```
 
@@ -58,13 +53,23 @@ We first first for the years covered (2012-2020), then group by year to calculat
 
 ```{r}
 
-ut %>%
+ut_annualtotals <- ut %>%
   filter(year >= 2012 & year <= 2020) %>%
   group_by(year) %>%
-  summarise(total = sum(Vol.VentedFlared, na.rm = TRUE)) %>%
-  gt(rowname_col = "year") %>%
-  grand_summary_rows(fns = list("total" = "sum")) %>%
-  print()
+  summarise(Total = sum(vol_vented_flared, na.rm = TRUE))
+
+
+ut_annualtotals %>%
+   gt(rowname_col = "year") %>%
+   tab_stubhead(label = "Year") %>%
+   tab_header(title = "Flaring Volumes Reported to UDOGM",
+              subtitle = "Flaring volumes in Mcf (thousand cubic feet)") %>%
+   fmt_number(column = "Total",
+              decimals = 0) %>%
+   grand_summary_rows(fns = list("Total" = "sum"),
+                      columns = "Total",
+                      formatter=gt::fmt_number,
+                      decimals=0)
 
 
 ```

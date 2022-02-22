@@ -29,8 +29,6 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```
 
-
-
 Oil and gas companies in Oklahoma are not required to report volumes of gas flared or vented. However, they are required to request approval from the Oklahoma Corporation Commission (OCC) to flare or vent in excess of 50,000 cubic feet per day.  
 
 To request approval operators fill out Form 1022, the Application to Flare or Vent Gas. At the bottom of the form, there are fields for the OCC to record the approved volume per day and the number of days.

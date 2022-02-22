@@ -8,9 +8,9 @@ Howard Center reporters checked operator-reported volumes from 2012 to 2020 agai
 
 Of the United States’ 32 oil and gas producing states, the investigation focused the 13 [labeled](https://drive.google.com/file/d/19HUgQ1Bj6H8fejftY4m8IXANWdlNK5Jj/view?usp=sharing) by the U.S. Department of Energy as either Category I (“States With Significant Ongoing and Increasing Flaring Activity”) or Category II (“States Where Limited Flaring Occurs and Likelihood of Increase is Limited”). 
 
-Data availability and reporting requirements varied from state-to-state. In four states, operator-reported volumes are not publicly dislosed in an accessible format: Kansas, Oklahoma, Pennsylvania, and West Virginia. For Oklahoma, the Howard Center was able to calculate how much gas regulators allowed operators to flare or vent by extracting data from more than 800 flaring and venting requests submitted to the Oklahoma Corporation Commission between 2012 and 2020. 
+Data availability and reporting requirements varied from state-to-state. In three states, operator-reported volumes were not publicly dislosed in an accessible format: Kansas, Pennsylvania, and West Virginia. In Oklahoma, the Howard Center was able to calculate how much gas regulators *allowed* operators to flare or vent by extracting data from more than 800 flaring and venting requests submitted to the Oklahoma Corporation Commission between 2012 and 2020. 
 
-Reporters contacted relevant agencies in each of the nine remaining states to gather operator-reported data. The data, typically available on an annual basis, needed to be compiled and cleaned before reporters could calculate how much natural gas operators flared or vented from 2012 to 2020. 
+Reporters contacted relevant agencies in each of the nine remaining states to gather flaring and venting reports. The data, typically available on an annual basis, needed to be compiled and cleaned before reporters could calculate how much natural gas operators flared or vented from 2012 to 2020. (For questions about that process you 
  
 
 

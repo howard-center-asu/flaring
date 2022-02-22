@@ -48,7 +48,6 @@ co <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download", id))
 
 Claim: "Combined flared/vented gas volumes, as reported to the state: 45,228,287,000 cubic feet
 
-
 We arrived at these totals by aggregating flaring volumes for every year. We first extracted the year from the `reported_date` variable, then grouped by year to calculate annual totals. Using the gt package, we arrive at a total for volume flared from 2012 - 2020. 
 
 ```{r calculate annual totals, etcho=TRUE}

@@ -60,9 +60,7 @@ mont <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download", id)
 
 # Total flared/vented volumes
 
-The story states: "Combined flared/vented gas volumes, as reported by the state: 40,952,143,000 cubic feet"
-
-The story states: "From 2012 to 2020, Montana companies flared or vented nearly 41 billion cubic feet of gas, according to a Howard Center analysis of state data."
+FACT: From 2012 to 2020, Montana companies flared or vented nearly 40,952,143,000 billion cubic feet of gas, according to a Howard Center analysis of state data.
 
 These numbers were calculated by aggregating the totals reported. We extracted the year from the date and created a new `year` column, then filtered for the years 2012 to 2020, the time frame we're looking at for this investigation. Next, we grouped by year to calculate annual totals. These results will be in MCF.
 

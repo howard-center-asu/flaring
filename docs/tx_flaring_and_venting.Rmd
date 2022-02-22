@@ -10,8 +10,6 @@ output:
      df_print: paged
 ---
 
-*NOTE FOR SARAH: THIS IS WHAT YOU DID FOR THE TEXAS TEAM. NO OTHER PERSON HAS TOUCHED IT* 
-
 ```{r setup, include=FALSE}
 
 knitr::opts_chunk$set(echo = TRUE)

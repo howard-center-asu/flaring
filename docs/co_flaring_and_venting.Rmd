@@ -33,20 +33,18 @@ An annual compilation of production reports can be found on the commissions [dow
 
 # Load data
 
-Annual data for Colorado needed to be downloaded year-to-year, compiled, then cleaned. For a copy of this data cleaning, contact Jimmy Cloutier at [jclouti3@asu.edu](mailto:jclouti3@asu.edu). The compiled data was saved as an .csv to the Howard Center drive, [here](https://drive.google.com/file/d/1Kh13rdkcBjCkQHEM3V2NFjeVMkqQ-Qxc/view?usp=sharing). 
-
-We uploaded this file into R. Each row represents a company's monthly report for flaring and venting from a particular well drilling from a particular formation. 
+We compiled and cleaned all this data from the state regulatory agency and saved it to new data sets available from the Howard Center [here](https://drive.google.com/file/d/1Kh13rdkcBjCkQHEM3V2NFjeVMkqQ-Qxc/view?usp=sharing). (For more information about our data cleaning, please contact: howardcenter@asu.edu). 
 
 ```{r load data}
 
 id <- "1Kh13rdkcBjCkQHEM3V2NFjeVMkqQ-Qxc" # google file ID
-co <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download", id))
+co <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download", id), sep = ",")
 
 ```
 
-# Total flared/vented volumes 
+# Analysis 
 
-Claim: "Combined flared/vented gas volumes, as reported to the state: 45,228,287,000 cubic feet
+FACT: Oil and gas operators reported flaring and venting a combined 45,228,287,000 cubic feet of gas. 
 
 We arrived at these totals by aggregating flaring volumes for every year. We first extracted the year from the `reported_date` variable, then grouped by year to calculate annual totals. Using the gt package, we arrive at a total for volume flared from 2012 - 2020. 
 

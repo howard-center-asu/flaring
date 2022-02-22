@@ -44,18 +44,16 @@ We created a fresh csv file for the analysis: `ut_flaring_and_venting.csv`
 ```{r load_and_clean_data, echo=TRUE}
 
 id <- "1R3FPAoFZDiJzdnMJpljVHrmak-TZu4dA" # google file ID
-ut <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download", id))
+ut <- read_csv(sprintf("https://docs.google.com/uc?id=%s&export=download", id))
 
 ```
 
 
-#Analysis
+# Analysis
 
-The story states: "Combined flared/vented gas volumes, as reported to the state: 11,390,778,000 cubic feet"
+FACT: "According to state data, oil and gas companies in Utah flared and vented 11,390,778,000 cubic feet of natural gas between 2012 and 2020."
 
-The story states: "According to state data, oil and gas companies in Utah flared and vented more than 11 billion cubic feet of natural gas between 2012 and 2020."
-
-So, we're going to go ahead and summarize for the years 2012 to 2020. Remember that these results will be in MCF.
+We first first for the years covered (2012-2020), then group by year to calculate annual flared and vented volumes. Using the `gt` package, we calculate a grand total. 
 
 
 ```{r}

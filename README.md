@@ -2,7 +2,7 @@
 
 This repository contains the Howard Center's data analysis for [Gaslit](https://cronkitenews.azpbs.org/howardcenter/gaslit), an investigation of flaring and venting by the oil and gas industry in the United States.
 
-Oil and gas operators release large volumes of methane and carbon dioxide, two of the most potent greenhouse gases, by burning natural gas or releasing it directly into the atmosphere. They are required to report those volumes to state agencies responsible with regulating waste of natural resources. 
+Oil and gas operators release large volumes of methane and carbon dioxide, two of the most potent greenhouse gases, by burning natural gas or releasing it directly into the atmosphere. They are required to report those volumes to state agencies responsible for regulating waste of natural resources. 
 
 Howard Center reporters checked operator-reported volumes from 2012 to 2020 against satellite recorded data [available](https://eogdata.mines.edu/download_global_flare.html) from the Earth Observation Group at the Colorado School of Mines. Using latitude-longitude coordinates the Howard Center plotted satellite-recorded flares to their corresponding U.S. state; a copy of that data is available [here](https://drive.google.com/file/d/17-FBaY79bGB_ITt-73K4kIUnMHhN-pDS/view?usp=sharing).
 

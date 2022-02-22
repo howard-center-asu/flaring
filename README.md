@@ -4,7 +4,7 @@ This repository contains the Howard Center's data analysis for [Gaslit](https://
 
 Oil and gas operators release large volumes of methane and carbon dioxide, two of the most potent greenhouse gases, by burning natural gas or releasing it directly into the atmosphere. They are required to report those volumes to state agencies responsible with regulating waste of natural resources. 
 
-Howard Center reporters checked these operator-reported volumes from 2012 to 2020 against satellite recorded data [available](https://eogdata.mines.edu/download_global_flare.html) from the Earth Observation Group at the Colorado School of Mines. Using latitude-longitude coordinates the Howard Center plotted satellite-recorded flares to their corresponding U.S. state; a copy of that data is available [here](https://drive.google.com/file/d/17-FBaY79bGB_ITt-73K4kIUnMHhN-pDS/view?usp=sharing).
+Howard Center reporters checked operator-reported volumes from 2012 to 2020 against satellite recorded data [available](https://eogdata.mines.edu/download_global_flare.html) from the Earth Observation Group at the Colorado School of Mines. Using latitude-longitude coordinates the Howard Center plotted satellite-recorded flares to their corresponding U.S. state; a copy of that data is available [here](https://drive.google.com/file/d/17-FBaY79bGB_ITt-73K4kIUnMHhN-pDS/view?usp=sharing).
 
 Of the United States’ 32 oil and gas producing states, the investigation focused the 13 [labeled](https://drive.google.com/file/d/19HUgQ1Bj6H8fejftY4m8IXANWdlNK5Jj/view?usp=sharing) by the U.S. Department of Energy as either Category I (“States With Significant Ongoing and Increasing Flaring Activity”) or Category II (“States Where Limited Flaring Occurs and Likelihood of Increase is Limited”). 
 

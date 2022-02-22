@@ -1,3 +1,10 @@
+
+# files that we don't want to have synced across devices
+.DS_Store
+
+
+
+
 # History files
 .Rhistory
 .Rapp.history

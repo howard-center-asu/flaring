@@ -1,51 +1,48 @@
 ---
 title: "Satellite Records of Flaring and Venting on Tribal Land"
-date: "`r Sys.Date()`"
-output:
+author: "Jimmy Cloutier"
+output: 
   html_document:
-    theme: lumen
-    df_print: paged
-    toc: true
-    toc_float: true
-    code_download: true
+      code_folding: show
+      df_print: paged
+      toc: true
+      toc_float: true
+      code_download: true
 ---
 
 
 
-```{r setup, include=FALSE}
+```{r setup, message=FALSE, class.source="fold-hide"}
 
-library(knitr)
-library(rmdformats)
-
-# Global options
-options(max.print="75")
-opts_chunk$set(echo=TRUE,
-	             cache=FALSE,
-               message=FALSE,
-               warning=FALSE)
-
-opts_knit$set(width=75)
-options(digits = 10, scipen = 99)
-
-# Special libraries
+# For general data science
 library(tidyverse)
+
+# For reading Excel files
 library(readxl)
-library(gt) # for pretty tables
 
-# For plots
-library(ggplot2)
+# For data cleaning
+library(janitor)
 
-sf::sf_use_s2(FALSE)
+# For working with datetime
+library(lubridate)
+
+# For pretty tables
+library(knitr)
+library(gt)
+
+knitr::opts_chunk$set(echo = TRUE)
 
 ```
 
-# Preparing data 
+# Introduction
 
-Data of satellite-observed natural gas flaring was downloaded from the Colorado School of Mines Earth Observation Group, [here](https://eogdata.mines.edu/download_global_flare.html): https://eogdata.mines.edu/download_global_flare.html. You'll need to create an EOG account. All the .csv files were saved to a `viirs_satellite` folder in this directory.  
+The Howard Center checked operator-reported volumes from 2012 to 2020 against satellite recorded data [available](https://eogdata.mines.edu/download_global_flare.html) from the Earth Observation Group at the Colorado School of Mines. Also available from the website is a detailed [explanation](http://www.mdpi.com/1996-1073/9/1/14) by Christopher Elvidge of the Visible Infrared Imaging Radiometer Suite (VIIRS) technology used to measure flaring volumes from space. 
 
-After cleaning the data, we used county and state shape files to spatially join the flaring points. Another spatial join with data of federal and tribal lands/waters to identify and flag those jurisdictions: state, federal, and tribal.
+Users need to create an EOG account to download the data. 
 
-That information was saved as .csv, which we'll load now.
+# Load data
+
+Using latitude-longitude coordinates the Howard Center plotted satellite-recorded flares to their corresponding U.S. state and saved it to new data sets available from the Howard Center [here](https://drive.google.com/file/d/1Kh13rdkcBjCkQHEM3V2NFjeVMkqQ-Qxc/view?usp=sharing). (For more information about how we spatially joined the data, please contact: howardcenter@asu.edu). 
 
 ```{r}
 
@@ -58,7 +55,7 @@ flaring <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download", 
 
 # Analysis
 
-Totals annual flaring volume for each state was calculated this way. This supports numerous facts in the project from total amounts flared to flaring trends over the period examined.
+We filtered for the 13 states we investigated, then grouped by year and state to arrive at annual totals. These figures supports numerous facts in the project from total amounts flared to flaring trends over the period examined.
 
 ```{r}
 
@@ -85,7 +82,8 @@ flaring %>%
          "Total" = rowSums(across(c(`2012`:`2020`))),
          "Total (%)" = (Total/sum(Total))*100) %>%
   arrange(desc(Total)) %>%
-  # following code makes a pretty table
+  
+# Pretty table
   gt( rowname_col = "state_name") %>% 
   tab_stubhead(label = "State") %>%
   tab_header(title = "Satellite Recorded Flaring",
@@ -108,12 +106,13 @@ FACT: Satellite data analyzed by the Howard Center revealed that oil and gas ope
 
 
 ```{r}
+
 flaring %>%
-  filter(admin != 'offshore') %>% # we don't need to look at offshore drilling for this, since it's unassociated with any state
+  filter(admin != 'offshore') %>% # we don't need to look at offshore drilling for this, since it's not associated with any state
   group_by(state_name, admin) %>%
-  summarise(mcf = sum(mcf, na.rm = TRUE),
+  summarise(cf = sum(cf, na.rm = TRUE),
             .groups = 'drop') %>%
-  pivot_wider(names_from = admin, values_from = mcf) %>%
+  pivot_wider(names_from = admin, values_from = cf) %>%
   mutate(total=rowSums(across(tribal:state),na.rm = TRUE),
          pct_state = (state/(total)),
          pct_tribal = (tribal/(total)),
@@ -132,7 +131,7 @@ flaring %>%
              pct_tribal = "% Tribal", 
              pct_federal = "% Federal") %>%
   tab_header(title = "Satellite Recorded Flaring by Admin",
-             subtitle = "Flaring volumes in Mcf (thousand cubic feet) recorded by VIIRS satellite from 2012 - 2020")
+             subtitle = "Flaring volumes recorded by VIIRS satellite from 2012 - 2020")
   
 
 ```

@@ -27,8 +27,6 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Introduction
 
-This notebook contains the analysis of New Mexico's flaring data for the Howard Center Investigation, "....". As part of the investigation, we collected flaring and venting volumes reported by oil and gas companies to state regulators. We then compared annual totals for each state to what was recorded by a U.S. satellite equipped with a Visible Infrared Imaging Radiometer Suite (VIIRS) instrument. (To learn more about the satellite and our analysis of the data it collected, see [this](....) notebook).
-
 Oil and gas companies in Colorado are required to file monthly production reports (called a form 7) with the Colorado Oil and Gas Conservation Commission, reporting an estimation or measurement of the volume of gas they flared or vented. More information on the form 7 and what it reports can be found on the Commission's [website](https://cogcc.state.co.us/reg.html#/forms/form7_new). Instructions can be downloaded [here](https://cogcc.state.co.us/documents/reg/Forms/instructions/data_templates/Form7wInstructions.xls), and an example of a filled out form is available [here](https://cogcc.state.co.us/documents/reg/Forms/instructions/Example_Forms/fm7_page1_example.pdf). Reported gas flared or vented is measured in thousand cubic feet (Mcf).
 
 An annual compilation of production reports can be found on the commissions [downloads page](https://cogcc.state.co.us/data2.html#/downloads) under all production reports received by year. This analysis uses annual reports from 2012-2020. (Please note that reports from previous years are sometimes included in each zip.) The data dictionary is available from the commission, [here](https://cogcc.state.co.us/documents/data/downloads/production/production_record_data_dictionary.htm) This data is current as of August 6, 2021.
@@ -60,17 +58,17 @@ co_annualtotals <- co %>%
           year = year(report_date)) %>%
    filter(year >= 2012 & year <= 2020) %>%
    group_by(year) %>%
-   summarise(flared = sum(flared, na.rm = TRUE))
+   summarise(Total = sum(flared, na.rm = TRUE))
 
 co_annualtotals %>%
    gt(rowname_col = "year") %>%
-   tab_stubhead(label = "year") %>%
+   tab_stubhead(label = "Year") %>%
    tab_header(title = "Flaring Volumes Reported to COGCC",
               subtitle = "Flaring volumes in Mcf (thousand cubic feet)") %>%
-   fmt_number(column = "flared",
+   fmt_number(column = "Total",
               decimals = 0) %>%
-   grand_summary_rows(fns = list("total" = "sum"),
-                      columns = "flared",
+   grand_summary_rows(fns = list("Total" = "sum"),
+                      columns = "Total",
                       formatter=gt::fmt_number,
                       decimals=0)
 

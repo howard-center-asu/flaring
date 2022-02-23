@@ -4,12 +4,13 @@ date: "2/22/2022"
 output: 
   html_document:
     toc: true
+    toc_float: true
 ---
 
 
 This is an index to the state-specific analyses that went into Arizona State University's Howard Center project, "[Gaslit](https://cronkitenews.azpbs.org/howardcenter/gaslit)". The project investigated flaring and venting by U.S. producers. 
 
-Each state and several auxilliary fact-checking analyses are included here. Some of the original raw data files were too large to include here. The pre-processing and original source is documented in each state's page. The raw markdown files are available at <https://github.com/howard-center-asu/gaslit>. 
+Each state and several auxilliary fact-checking analyses are included. Some of the original raw data files were too large to include here. The pre-processing and original source is documented in each state's page. The raw markdown files are available at <https://github.com/howard-center-asu/gaslit>. 
 
 
 
@@ -31,7 +32,7 @@ Each state and several auxilliary fact-checking analyses are included here. Some
 Several other fact-checking documents are included in the repo:
 
 * [Assigning states and counties](satellite_flaring.html) to flaring latitude and longitudes.
-* [Fort Berthold](fort_berthold_indian_reservation_flaring.Rmd) Indian Reservation analysis, in North Dakota (in raw markdown form)
-* [Census demographics](tx_census_flaring.Rmd) for Texas flaring and venting (raw markdown form). 
+* [Fort Berthold](https://github.com/howard-center-asu/gaslit/blob/main/docs/fort_berthold_indian_reservation_flaring.Rmd) Indian Reservation analysis, in North Dakota (in raw markdown form)
+* [Census demographics](https://github.com/howard-center-asu/gaslit/blob/main/docs/tx_census_flaring.Rmd) for Texas flaring and venting (raw markdown form). 
 
 

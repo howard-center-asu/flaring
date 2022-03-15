@@ -90,6 +90,8 @@ mont_annualtotals %>%
 
 FACT: Since 2015, lease 1825, containing two Denbury wells with permanent exceptions to release gas, has flared or vented about 1 billion cubic feet of gas, more than any other lease, a Howard Center analysis of satellite data showed.
 
+Like before, we aggregated totals, but for each lease as opposed to each year. We filtered after the year 2015. 
+
 ```{r  leases totals, echo=TRUE }
 
 mont_leasetotals <- mont %>%

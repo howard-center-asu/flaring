@@ -36,14 +36,12 @@ knitr::opts_chunk$set(echo = TRUE)
 
 Oil and gas companies in Wyoming use an online portal to report the volumes of gas flared, vented and used on the lease, along with the number of days that flaring and venting occurred. While there is no publicly available form, the Wyoming Oil and Gas Conservation Commission confirmed that the data made public on its website is what is submitted. For reference, [here](http://pipeline.wyo.gov/legacywogcce.cfm) is the WOGCC packet companies follow when they start filing electronically.
 
-Data from the monthly reports (2014-present) are available at the WOGCC’s data [website](http://pipeline.wyo.gov/legacywogcce.cfm), which has statewide and county-specific data sets for each year. Click “Production” and then “Flaring, Vented, Lease Use Data by Selected County and Yr.” From the drop down menu, select “Wyoming” for data from all counties, and then select a given year. Click “submit” to download the file in .xls format. 
+Data from the monthly reports (2014-present) are available at the WOGCC’s data [website](http://pipeline.wyo.gov/legacywogcce.cfm), which has statewide and county-specific data sets for each year. Click “Production” and then “Flaring, Vented, Lease Use Data by Selected County and Yr.” From the drop down menu, select “Wyoming” for data from all counties, and then select a given year. Click “submit” to download the file in .xls format. Each row represents a company's annual record for flaring and venting from a particular well drilling from a particular formation. 
 
 
 # Load data
 
 We compiled and cleaned the data from the state regulatory agency and saved it as a new dataset available from the Howard Center [here](https://drive.google.com/file/d/11wk_X_krbNwBmsWN0OSP-U7XikQcrB3T/view?usp=sharing). (For more information about our data cleaning, please contact: howardcenter@asu.edu) 
-
-We uploaded this file into R. Each row represents a company's annual record for flaring and venting from a particular well drilling from a particular formation. 
 
 
 ```{r}

@@ -46,8 +46,7 @@ Using latitude-longitude coordinates the Howard Center plotted satellite-recorde
 
 ```{r}
 
-id <- "17-FBaY79bGB_ITt-73K4kIUnMHhN-pDS" # google file ID
-flaring <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download", id))
+flaring <- read.csv(url("https://cronkitedata.s3.amazonaws.com/howard/gaslit/satellite_flaring.csv"))
 
 
 ```

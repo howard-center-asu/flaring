@@ -56,27 +56,16 @@ We compiled and cleaned all this data from the state regulatory agency and saved
 ```{r}
 
 # Disposition data
-id <- "1Jx6xkqyru4A2oWad3CauowEefh-a8qcF" # google file ID
-nm_flaring <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download", id)) %>%
-  clean_names() %>%
-  select(-x) # removes the row number columns from .csv
+nm_flaring <- read.csv(url("https://cronkitedata.s3.amazonaws.com/howard/gaslit/nm_flaring_and_venting.csv"))
 
 # APDs
-id <- "1f9MVvZU6dyHVx7FlkZRvpIYmAqsaYvjE"
-nm_apds <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download", id)) %>%
-  clean_names() %>%
-  select(-x) # removes the row number columns from .csv
+nm_apds <- read.csv(url("https://cronkitedata.s3.amazonaws.com/howard/gaslit/nm_apds.csv"))
 
 # Wells
-id <- "1D6YaFP5h1hXgMi4b058i5u2adHLxQw15"
-nm_wells <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download", id)) %>%
-  clean_names() %>%
-  select(-x) # removes the row number columns from .csv
+nm_wells <- read.csv(url("https://cronkitedata.s3.amazonaws.com/howard/gaslit/nm_wells.csv"))
 
 # Well completions
-id <- "1qsnPcklw8MS_TDbzRS61lISRxIilLJEf"
-nm_completions <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download", id)) %>%
-    clean_names()
+nm_completions <- read.csv(url("https://cronkitedata.s3.amazonaws.com/howard/gaslit/nm_well_completions.csv"))
 
 ```
 

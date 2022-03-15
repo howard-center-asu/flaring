@@ -51,8 +51,7 @@ We cleaned the data and ensured there were no duplicates, then saved the data to
 
 ```{r load_and_clean_data, echo=TRUE}
 
-id <- "1bc9Fry0o5SXHeWxB_ezWcX8pkhKAlmB_" # google file ID
-mont <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download", id))
+mont <- read.csv(url("https://cronkitedata.s3.amazonaws.com/howard/gaslit/mt_flaring_and_venting.csv"))
 
 
 ```

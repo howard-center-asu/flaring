@@ -49,9 +49,7 @@ The dataset is available from the Howard Center [here](https://drive.google.com/
 
 ```{r}
 
-id <- "1Xqz5JLrsUa5OJH55MG5JG_btC02T6lCM" # google file ID
-ok <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download", id)) %>%
-  select(-X) # removes the row number columns from .csv
+ok <- read.csv(url("https://cronkitedata.s3.amazonaws.com/howard/gaslit/ok_flaring_and_venting.csv"))
 
 ```
 

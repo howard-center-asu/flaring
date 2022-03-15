@@ -37,8 +37,7 @@ We compiled and cleaned all this data from the state regulatory agency and saved
 
 ```{r load data}
 
-id <- "1Kh13rdkcBjCkQHEM3V2NFjeVMkqQ-Qxc" # google file ID
-co <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download", id), sep = ",")
+load(url("https://cronkitedata.s3.amazonaws.com/howard/gaslit/co_flaring_and_venting.rda"))
 
 ```
 
@@ -50,9 +49,8 @@ We arrived at these totals by aggregating flaring volumes for every year. We fir
 
 ```{r calculate annual totals, etcho=TRUE}
 
-co_annualtotals <- co %>%
-   mutate(report_date = as.Date(report_date, format = "%Y-%m-%d"), 
-          year = year(report_date)) %>%
+co_annualtotals <- co_flaring_and_venting %>%
+  mutate(year = year(report_date)) %>%
    filter(year >= 2012 & year <= 2020) %>%
    group_by(year) %>%
    summarise(Total = sum(flared, na.rm = TRUE))

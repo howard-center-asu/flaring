@@ -38,8 +38,7 @@ We compiled and cleaned the data from the state regulatory agency and saved it a
 
 ```{r load_and_clean_data, echo=TRUE}
 
-id <- "1R3FPAoFZDiJzdnMJpljVHrmak-TZu4dA" # google file ID
-ut <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download", id))
+ut <- read.csv(url("https://cronkitedata.s3.amazonaws.com/howard/gaslit/ut_flaring_and_venting.csv"))
 
 ```
 

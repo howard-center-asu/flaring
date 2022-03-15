@@ -48,8 +48,7 @@ We uploaded this file into R. Each row represents a company's annual record for 
 
 ```{r}
 
-id <- "11wk_X_krbNwBmsWN0OSP-U7XikQcrB3T" # google file ID
-wy <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download", id))
+wy <- read.csv(url("https://cronkitedata.s3.amazonaws.com/howard/gaslit/wy_flaring_and_venting.csv"))
 
 ```
 
